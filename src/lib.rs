@@ -1,4 +1,6 @@
-mod grafzahl;
+extern crate core;
+
+pub mod grafzahl;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
@@ -12,5 +14,12 @@ mod tests {
     fn it_works() {
         let result = add(2, 2);
         assert_eq!(result, 4);
+    }
+
+    #[test]
+    fn whitespace() {
+        let s = "       ";
+        println!("|{}|", s);
+        println!("|{}|", s.trim());
     }
 }
