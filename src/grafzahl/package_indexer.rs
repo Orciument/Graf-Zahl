@@ -30,7 +30,7 @@ pub fn search_files(path: PathBuf) -> Option<Vec<PathBuf>> {
 
 static IGNORE_LIST: Lazy<Vec<String>> = Lazy::new(import_ignore_list);
 
-fn import_ignore_list() -> Vec<String>{
+fn import_ignore_list() -> Vec<String> {
     let path: PathBuf = PathBuf::from("src/grafzahl/configs/ignore_list.txt");
 
     let file = match File::open(path) {

@@ -23,8 +23,8 @@ fn file_is_supported(p: &PathBuf) -> bool {
         None => return false,
         Some(x) => match x.to_str() {
             None => return false,
-            Some(y) => y
-        }
+            Some(y) => y,
+        },
     };
     SUPPORTED_EXT.contains(&ext)
 }

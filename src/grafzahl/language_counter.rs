@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter, write};
+use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use once_cell::sync::Lazy;
 
@@ -27,20 +27,24 @@ impl Display for Language {
 }
 
 pub(crate) static LANGUAGES: Lazy<Vec<Language>> = Lazy::new(|| {
-    let x = vec![Language {
-        name: "Rust",
-        comment_symbol: "//",
-        file_extension: "rs",
-    }, Language {
-        name: "Java",
-        comment_symbol: "//",
-        file_extension: "java",
-    }, Language {
-        name: "",
-        comment_symbol: "",
-        file_extension: "",
-    }];
-    x.iter().for_each(|x| { println!("{}",x) });
+    let x = vec![
+        Language {
+            name: "Rust",
+            comment_symbol: "//",
+            file_extension: "rs",
+        },
+        Language {
+            name: "Java",
+            comment_symbol: "//",
+            file_extension: "java",
+        },
+        Language {
+            name: "",
+            comment_symbol: "",
+            file_extension: "",
+        },
+    ];
+    x.iter().for_each(|x| println!("{x}"));
     x
 });
 
@@ -51,15 +55,15 @@ pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<&'static str, Lin
     for f in files_vec {
         let counts = match count_lines(f) {
             None => continue,
-            Some(x) => x
+            Some(x) => x,
         };
 
         //If this Language was already encountered bevor we add it to the current Object,
         //rather than creating a duplicate one
-        if map.contains_key(&*counts.1) {
-            let lang = match map.get_mut(&*counts.1) {
+        if map.contains_key(counts.1) {
+            let lang = match map.get_mut(counts.1) {
                 None => continue,
-                Some(x) => x
+                Some(x) => x,
             };
             lang.code_count += counts.0.code_count;
             lang.empty_count += counts.0.empty_count;
@@ -88,7 +92,6 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, &'static str)> {
         empty_count: 0,
     };
 
-
     let lines = BufReader::new(file).lines();
     for l_opt in lines {
         let l = match l_opt {
@@ -96,10 +99,10 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, &'static str)> {
             Err(_) => continue,
         };
 
-        if l.contains(&lang.comment_symbol) {
+        if l.contains(lang.comment_symbol) {
             line_data.comment_count += 1;
             continue;
-        } else if l.trim().len() == 0 {
+        } else if l.trim().is_empty() {
             line_data.empty_count += 1;
         } else {
             line_data.code_count += 1;
@@ -109,13 +112,7 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, &'static str)> {
     Some((line_data, lang.name))
 }
 
-fn get_lang(p: &PathBuf) -> Option<&Language> {
+fn get_lang(p: &Path) -> Option<&Language> {
     let ext = p.extension()?.to_str()?;
-
-    for lang in LANGUAGES.iter() {
-        if lang.file_extension.eq(ext) {
-            return Some(lang);
-        }
-    }
-    None
+    LANGUAGES.iter().find(|&lang| lang.file_extension.eq(ext))
 }

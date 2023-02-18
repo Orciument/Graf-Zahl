@@ -11,20 +11,25 @@ pub struct ProjectLangs {
     data: HashMap<&'static str, LineData>,
 }
 
-
 pub fn analyse_project(path: PathBuf) -> Option<ProjectLangs> {
     let dir_name = path.file_name()?.to_str()?.to_string();
     //Index
-    let mut vec = search_files(path.clone()).unwrap();
+    let mut vec = search_files(path).unwrap();
     //Filter
-    // filter_files(&mut vec);
+    filter_files(&mut vec);
     //Count
     let lang_map: HashMap<&str, LineData> = count_project_files(vec);
 
     //Add Totals
-    let sum = lang_map.values().fold((0,0,0), |sum: (u32, u32, u32), x| {
-        (sum.0 + x.code_count, sum.1 + x.comment_count, sum.2 + x.empty_count)
-    });
+    let sum = lang_map
+        .values()
+        .fold((0, 0, 0), |sum: (u32, u32, u32), x| {
+            (
+                sum.0 + x.code_count,
+                sum.1 + x.comment_count,
+                sum.2 + x.empty_count,
+            )
+        });
 
     Some(ProjectLangs {
         project_dir_name: dir_name,
@@ -38,15 +43,21 @@ pub fn analyse_project(path: PathBuf) -> Option<ProjectLangs> {
 }
 
 pub fn display_project(p: ProjectLangs) {
-    println!("Project: {} ==> {}", p.project_dir_name, (p.total.comment_count + p.total.code_count + p.total.empty_count));
+    println!(
+        "Project: {} ==> {}",
+        p.project_dir_name,
+        (p.total.comment_count + p.total.code_count + p.total.empty_count)
+    );
     for key in p.data.keys() {
         let value = p.data.get(key).unwrap();
-        println!("  |- {} => {} (LoC: {}, Comment: {}, NewLines: {})",
-                 key,
-                 (value.code_count + value.comment_count + value.empty_count),
-                 value.code_count,
-                 value.comment_count,
-                 value.empty_count);
+        println!(
+            "  |- {} => {} (LoC: {}, Comment: {}, NewLines: {})",
+            key,
+            (value.code_count + value.comment_count + value.empty_count),
+            value.code_count,
+            value.comment_count,
+            value.empty_count
+        );
     }
     println!("  |- ----------------------------------");
     println!();
