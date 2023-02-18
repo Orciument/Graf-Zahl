@@ -1,16 +1,15 @@
-use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-use once_cell::sync::{Lazy, OnceCell};
+use std::path::PathBuf;
+
+use once_cell::sync::Lazy;
 
 pub fn search_files(path: PathBuf) -> Option<Vec<PathBuf>> {
     let mut vec: Vec<PathBuf> = vec![];
 
     if path.is_file() {
-        &vec.push(path);
+        vec.push(path);
         return Some(vec);
     }
 

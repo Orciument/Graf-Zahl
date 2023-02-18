@@ -1,65 +1,93 @@
 use std::collections::HashMap;
-use std::fs::{File, read};
+use std::fmt::{Display, Formatter, write};
+use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use crate::grafzahl::file_filter::{get_language_info, Language};
 
-#[derive(Debug, Clone)]
+use once_cell::sync::Lazy;
+
+#[derive(Debug, Copy, Clone)]
 pub struct LineData {
-    language: String,
-    comment_count: u32,
-    code_count: u32,
-    empty_count: u32,
+    pub comment_count: u32,
+    pub code_count: u32,
+    pub empty_count: u32,
 }
 
-pub fn count_files(paths: Vec<PathBuf>) {
-    let mut map: HashMap<String, LineData> = HashMap::new();
+#[derive(Debug, Copy, Clone)]
+pub struct Language {
+    pub name: &'static str,
+    pub comment_symbol: &'static str,
+    pub file_extension: &'static str,
+}
+
+impl Display for Language {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}", self.name, self.file_extension)
+    }
+}
+
+pub(crate) static LANGUAGES: Lazy<Vec<Language>> = Lazy::new(|| {
+    let x = vec![Language {
+        name: "Rust",
+        comment_symbol: "//",
+        file_extension: "rs",
+    }, Language {
+        name: "Java",
+        comment_symbol: "//",
+        file_extension: "java",
+    }, Language {
+        name: "",
+        comment_symbol: "",
+        file_extension: "",
+    }];
+    x.iter().for_each(|x| { println!("{}",x) });
+    x
+});
+
+pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<&'static str, LineData> {
+    let mut map: HashMap<&str, LineData> = HashMap::new();
 
     //TODO Threads
-    for f in paths {
-        let counts = count_lines(f);
+    for f in files_vec {
+        let counts = match count_lines(f) {
+            None => continue,
+            Some(x) => x
+        };
 
-        if map.contains_key(&*counts.language) {
-            let lang = match map.get_mut(&*counts.language) {
+        //If this Language was already encountered bevor we add it to the current Object,
+        //rather than creating a duplicate one
+        if map.contains_key(&*counts.1) {
+            let lang = match map.get_mut(&*counts.1) {
                 None => continue,
                 Some(x) => x
             };
-            lang.code_count += counts.code_count;
-            lang.empty_count += counts.empty_count;
-            lang.comment_count += counts.comment_count;
+            lang.code_count += counts.0.code_count;
+            lang.empty_count += counts.0.empty_count;
+            lang.comment_count += counts.0.comment_count;
         } else {
-            map.insert(counts.language.clone(), counts);
+            map.insert(counts.1, counts.0);
         }
     }
-
-    for value in map.values() {
-        println!("{} => {} (LoC: {}, Comment: {}, NewLines: {})",
-                 value.language,
-                 (value.code_count + value.comment_count + value.empty_count),
-                 value.code_count,
-                 value.comment_count,
-                 value.empty_count);
-    }
+    map
 }
 
-pub fn count_lines(path: PathBuf) -> LineData {
+pub fn count_lines(path: PathBuf) -> Option<(LineData, &'static str)> {
+    let lang = match get_lang(&path) {
+        None => return None,
+        Some(x) => x,
+    };
+
+    let file = match File::open(&path) {
+        Ok(x) => x,
+        Err(_) => return None,
+    };
+
     let mut line_data = LineData {
-        language: "".to_string(),
         comment_count: 0,
         code_count: 0,
         empty_count: 0,
     };
 
-    let lang = match get_language_info(&path) {
-        None => return line_data,
-        Some(x) => x,
-    };
-    line_data.language = lang.name.to_string();
-
-    let file = match File::open(path) {
-        Ok(x) => x,
-        Err(_) => { return line_data }
-    };
 
     let lines = BufReader::new(file).lines();
     for l_opt in lines {
@@ -71,16 +99,23 @@ pub fn count_lines(path: PathBuf) -> LineData {
         if l.contains(&lang.comment_symbol) {
             line_data.comment_count += 1;
             continue;
-        }
-
-        else if l.trim().len() == 0 {
+        } else if l.trim().len() == 0 {
             line_data.empty_count += 1;
-        }
-
-        else {
+        } else {
             line_data.code_count += 1;
         }
     }
 
-    line_data
+    Some((line_data, lang.name))
+}
+
+fn get_lang(p: &PathBuf) -> Option<&Language> {
+    let ext = p.extension()?.to_str()?;
+
+    for lang in LANGUAGES.iter() {
+        if lang.file_extension.eq(ext) {
+            return Some(lang);
+        }
+    }
+    None
 }
