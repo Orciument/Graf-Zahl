@@ -1,3 +1,4 @@
 pub mod count_project;
-pub mod language_counter;
+pub mod counter;
+mod languages;
 pub mod package_indexer;
