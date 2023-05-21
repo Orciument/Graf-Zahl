@@ -5,6 +5,8 @@ use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
 
+use crate::{CONFIG_LOCATION, get_config_location};
+
 pub fn search_files(path: PathBuf) -> Option<Vec<PathBuf>> {
     let mut vec: Vec<PathBuf> = vec![];
 
@@ -31,11 +33,12 @@ pub fn search_files(path: PathBuf) -> Option<Vec<PathBuf>> {
 static IGNORE_LIST: Lazy<Vec<String>> = Lazy::new(import_ignore_list);
 
 fn import_ignore_list() -> Vec<String> {
-    let path: PathBuf = PathBuf::from("src/grafzahl/configs/ignore_list.txt");
+    let path_string = format!("{}/ignore_list.txt", get_config_location());
+    let path: PathBuf = PathBuf::from(&path_string);
 
     let file = match File::open(path) {
         Ok(x) => x,
-        Err(e) => panic!("{}", e),
+        Err(e) => panic!("Could not find Ignore-List at: {path_string}! Might be missing privileges, or the Path to the File may be incorrect {e}")
     };
 
     let reader = BufReader::new(file);

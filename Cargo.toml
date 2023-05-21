@@ -1,5 +1,5 @@
 [package]
-name = "Graf_Zahl"
+name = "graf_zahl"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 once_cell = "1.17.0"
+quicli = "0.4.0"
+structopt = "0.3.26"

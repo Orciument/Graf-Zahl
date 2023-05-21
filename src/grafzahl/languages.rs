@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::str::FromStr;
+use crate::{CONFIG_LOCATION, get_config_location};
 
 #[derive(Debug, Clone)]
 pub struct Language {
@@ -58,10 +59,10 @@ fn get_next_value(s: &mut String) -> Option<String> {
 }
 
 pub fn import_languages() -> Vec<Language> {
-    let path: PathBuf = PathBuf::from("src/grafzahl/configs/languages.txt");
+    let path: PathBuf = PathBuf::from(&format!("{}/languages.txt", get_config_location()));
     let file = match File::open(&path) {
         Ok(x) => x,
-        Err(e) => panic!("Could not import Languages: {e}"),
+        Err(e) => panic!("Could not find Language File! Might be missing privileges, or the Path to the File may be incorrect: {e}"),
     };
 
     let mut languages = vec![];

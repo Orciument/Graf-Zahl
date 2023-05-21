@@ -66,14 +66,38 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, String)> {
             Err(_) => continue,
         };
 
+        // //Char Count Start
+        // let char_count: u32 = l.len() as u32;
+        // if l.contains(&lang.comment_symbol) {
+        //     line_data.comment_count += &char_count;
+        //     continue;
+        // } else if l.trim().is_empty() {
+        //     line_data.empty_count += &char_count;
+        // } else {
+        //     line_data.code_count += &char_count;
+        // }
+        // //Char Count End
+
+        //Word Count Start
+        let word_count: u32 = l.trim().split(' ').count() as u32;
         if l.contains(&lang.comment_symbol) {
-            line_data.comment_count += 1;
+            line_data.comment_count += &word_count;
             continue;
         } else if l.trim().is_empty() {
-            line_data.empty_count += 1;
+            line_data.empty_count += &word_count;
         } else {
-            line_data.code_count += 1;
+            line_data.code_count += &word_count;
         }
+        //Word Count End
+
+        // if l.contains(&lang.comment_symbol) {
+        //     line_data.comment_count += 1;
+        //     continue;
+        // } else if l.trim().is_empty() {
+        //     line_data.empty_count += 1;
+        // } else {
+        //     line_data.code_count += 1;
+        // }
     }
 
     Some((line_data, lang.name.clone()))
