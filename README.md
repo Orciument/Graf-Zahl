@@ -1,7 +1,9 @@
 # Graf-Zahl
 A CLI Tool in Rust for Calculating the Lines of Code in a Codebase
-![image](https://github.com/Orciument/Graf-Zahl/assets/67759477/e5c25015-333e-4e49-9f1f-0935acdf4b7b)
-![image](https://github.com/Orciument/Graf-Zahl/assets/67759477/0da30056-8472-4e42-a352-91fbf3290fe1)
+---------------------
+![239758977-0da30056-8472-4e42-a352-91fbf3290fe1](https://github.com/Orciument/Graf-Zahl/assets/67759477/0486fcb2-a03f-45d5-8659-d2680cb7a175)
+![239758948-e5c25015-333e-4e49-9f1f-0935acdf4b7b](https://github.com/Orciument/Graf-Zahl/assets/67759477/7e721faf-283c-4c24-b5da-0e4f11a81dff)
+---------------------
 
 
 # What counts as a line of Code
