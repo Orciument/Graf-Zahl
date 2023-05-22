@@ -13,12 +13,11 @@ mod grafzahl;
 const CONFIG_LOCATION: &str = "%LOCALAPPDATA%/graf-zahl";
 
 pub fn get_config_location() -> String {
-    CONFIG_LOCATION.replace("%LOCALAPPDATA%", &*env::var("LOCALAPPDATA").expect("Can't find Value for Env. %LOCALAPPDATA%"))
+    CONFIG_LOCATION.replace("%LOCALAPPDATA%", &env::var("LOCALAPPDATA").expect("Can't find Value for Env. %LOCALAPPDATA%"))
 }
 
 #[derive(StructOpt, Debug)]
 struct Cli {
-    // #[structopt(long = "directory", short = "d", default_value = ".")]
     #[structopt(default_value=".")]
     directory: String,
 }
@@ -28,7 +27,7 @@ fn main() -> CliResult {
     display_project(
         analyse_project(
             PathBuf::from(&args.directory).canonicalize()
-                .expect(&format!("Could not find an absolut File Path for Path: {}", &args.directory)))
+                .unwrap_or_else(|_| panic!("Could not find an absolut File Path for Path: {}", &args.directory)))
             .unwrap()); //Currently there is no Path that can Return None
 
     Ok(())

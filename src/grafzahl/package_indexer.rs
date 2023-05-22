@@ -1,3 +1,4 @@
+
 use std::fs;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
@@ -5,7 +6,7 @@ use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
 
-use crate::{CONFIG_LOCATION, get_config_location};
+use crate::{get_config_location};
 
 pub fn search_files(path: PathBuf) -> Option<Vec<PathBuf>> {
     let mut vec: Vec<PathBuf> = vec![];

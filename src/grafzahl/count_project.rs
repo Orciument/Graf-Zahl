@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::grafzahl::counter::{count_project_files, LineData};
+use crate::grafzahl::counter::{count_project_files, Count};
 use crate::grafzahl::package_indexer::search_files;
 
 pub struct ProjectLangs {
     project_dir_name: String,
-    total: LineData,
-    data: HashMap<String, LineData>,
+    total: Count,
+    data: HashMap<String, Count>,
 }
 
 pub fn analyse_project(path: PathBuf) -> Option<ProjectLangs> {
@@ -15,7 +15,7 @@ pub fn analyse_project(path: PathBuf) -> Option<ProjectLangs> {
     //Index
     let vec = search_files(path).unwrap();
     //Count
-    let lang_map: HashMap<String, LineData> = count_project_files(vec);
+    let lang_map: HashMap<String, Count> = count_project_files(vec);
 
     //Add Totals
     let sum = lang_map
@@ -30,7 +30,7 @@ pub fn analyse_project(path: PathBuf) -> Option<ProjectLangs> {
 
     Some(ProjectLangs {
         project_dir_name: dir_name,
-        total: LineData {
+        total: Count {
             comment_count: sum.0,
             code_count: sum.1,
             empty_count: sum.2,

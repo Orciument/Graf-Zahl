@@ -7,8 +7,9 @@ use once_cell::sync::Lazy;
 
 use crate::grafzahl::languages::{import_languages, Language};
 
+/// Holds the three different Counts for a Folder or File
 #[derive(Debug, Copy, Clone)]
-pub struct LineData {
+pub struct Count {
     pub comment_count: u32,
     pub code_count: u32,
     pub empty_count: u32,
@@ -16,12 +17,12 @@ pub struct LineData {
 
 pub(crate) static LANGUAGES: Lazy<Vec<Language>> = Lazy::new(import_languages);
 
-pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, LineData> {
-    let mut map: HashMap<String, LineData> = HashMap::new();
+pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, Count> {
+    let mut map: HashMap<String, Count> = HashMap::new();
 
     //TODO Threads
     for f in files_vec {
-        let counts = match count_lines(f) {
+        let counts = match count_file(f) {
             None => continue,
             Some(x) => x,
         };
@@ -42,7 +43,9 @@ pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, LineData>
     map
 }
 
-pub fn count_lines(path: PathBuf) -> Option<(LineData, String)> {
+pub fn count_file(path: PathBuf) -> Option<(Count, String)> {
+    //TODO Check if Path is really a file
+
     let lang = match get_lang(&path) {
         None => return None,
         Some(x) => x,
@@ -53,7 +56,7 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, String)> {
         Err(_) => return None,
     };
 
-    let mut line_data = LineData {
+    let mut line_data = Count {
         comment_count: 0,
         code_count: 0,
         empty_count: 0,
