@@ -15,7 +15,7 @@ If none of the above case are found to be true, a line is considered to be code.
 ---------------
 
 # Installing 
-With ``cargo build --release`` a standalone executable can be generated from the Project Directory; this executable can then be found under ``/target/release/``.
+With ``cargo build --release`` a standalone executable can be generated from the Project directory; this executable can then be found under ``/target/release/``.
 This binary can then be placed in a folder of your choosing.
 Additionally, you need to add two Config files in ``%localappdata%/graf-zahl``, named ``ignore_list.txt`` and ``languages.txt``
 
@@ -24,17 +24,7 @@ Additionally, you need to add two Config files in ``%localappdata%/graf-zahl``, 
 ``ignore_list.txt`` is for blacklisting folder names that should not be counted into the final total.
 
 ### Syntax:
-The ``ignore_list`` is just a Line break separated List of Strings that are required to be a exact match to exclude a Folder, excluding a File but not the entire Folder is currently not possible.
-
-### Example
-```
-.git
-.github
-.idea
-target
-lib
-out
-```
+The Syntax is similar to a gitignore file. The file is parsed with the [ignore crate](https://crates.io/crates/ignore). 
 
 ## languages
 ``languages.txt`` is to allow the executable to understand the Syntax of the Language, namely how Commands are defined.

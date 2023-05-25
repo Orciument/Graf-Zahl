@@ -4,3 +4,4 @@ mod languages;
 pub mod package_indexer;
 mod tree_indexer;
 pub mod print_project;
+mod ignore_checker;

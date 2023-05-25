@@ -35,6 +35,7 @@ fn debug_structure(ele: &FolderElement, indent_number: usize) {
 
 fn print_empty_toplevel(path: &PathBuf) {
     //Try to get current current Folder Name
+    //TODO THis is a possible !panic, because the existence of a name has not been checked
     println!("Project: {} ==> 0", get_name(path));
     error!("No non empty Folder Could be found!");
     println!("  |- ----------------------------------");

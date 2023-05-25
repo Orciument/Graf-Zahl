@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use quicli::prelude::error;
 
 use crate::grafzahl::counter::{Count, count_file, CountFileError};
+use crate::grafzahl::ignore_checker;
 use crate::grafzahl::tree_indexer::FolderElement::*;
 
 pub(crate) struct Folder {
@@ -39,14 +40,11 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
 
     //TODO Check if Path ends in "/" or ".."
 
-    //TODO Add Ignore feature (here, so it is for files and folder
-    //3 Ignore list cases
-    //test -< Dir name
-    //.test -< File Extension
-    //test.test -< File Name
-    //nvm i should copy git ignore
+    if ignore_checker::check_if_ignored(&path) {
+        return FolderEmpty;
+    };
 
-
+    //Path is file
     if path.is_file() {
         //TODO Should be in count_file, count_file should return a File
         let name = get_name(&path);
@@ -55,66 +53,61 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
 
         let counted_file = match count_file(path.clone()) {
             Ok(k) => k,
-            Err(e) => {
-                //TODO Add command line option to hide these
-                error!("Counting of file failed! (Path: {}", path.display());
-                match e {
-                    CountFileError::LanguageNotFoundError =>
-                    //TODO Remove multiple warnings for each filetype
-                        println!("Language for this file was not found in the config! (extension:\"{}\"", extension),
-                    CountFileError::IoError(io) =>
-                        println!("{}", io)
-                }
+            //TODO Add command line option to hide these
+            Err(CountFileError::LanguageNotFoundError) => {
+                //TODO Remove multiple warnings for each filetype
+                println!("Language for this file was not found in the config! (extension:\"{}\"", extension);
+                return FolderEmpty;
+            }
+            Err(CountFileError::IoError(io)) => {
+                error!("Counting of file failed! (Path: \"{}\") Err: {}", path.display(), io);
                 return FolderEmpty;
             }
         };
 
-        let file = File {
+        return File(File {
             name,
             extension,
             language: counted_file.1,
             count: counted_file.0,
-        };
-        return File(file);
+        });
     }
 
-    //Path is folder
+//Path is folder
     let mut members: Vec<FolderElement> = Vec::new();
 
-    //Find all Entries of the directory
+//Find all Entries of the directory
     for element_result in path.read_dir().unwrap() {
         let ele_path = element_result.unwrap().path();
         let folder_element = scan_directory(&ele_path);
         match folder_element {
+            //TODO Maybe include for debug purposes?
             FolderEmpty => continue,
             _ => members.push(folder_element)
         }
     }
 
+//Early return if Folder has no members
     if members.len() == 0 {
         return FolderEmpty;
     }
 
-    //Early return if the Folder only contains 1 File/Directory, because then we can just copy the values
+//Early return if the Folder only contains 1 File/Directory, because then we can just copy the values
     if members.len() == 1 {
         let count = match &members[0] {
-            Folder(f) => f.count.clone(),
             FolderEmpty => return FolderEmpty,
-            File(f) =>
-                HashMap::from([(f.language.clone(), f.count)])
+            Folder(f) => f.count.clone(),
+            File(f) => HashMap::from([(f.language.clone(), f.count)])
         };
-
-        let folder = Folder {
+        return Folder(Folder {
             name: get_name(&path),
             members,
             count,
-        };
-        return Folder(folder);
+        });
     }
 
     //calculate total for this Folder
     let mut total_map: HashMap<String, Count> = HashMap::new();
-
     for member in &members {
         match member {
             Folder(f) => merge_language_maps(&mut total_map, &f.count),
@@ -123,15 +116,16 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
         }
     }
 
-    let folder = Folder {
+    Folder(Folder {
         name: get_name(&path),
         members,
         count: total_map,
-    };
-    Folder(folder)
+    })
 }
 
-
+/// This function can only be used when the Path was canonicalized beforehand, because otherwise
+/// it could be that no name is found
+//TODO Should be private
 pub(crate) fn get_name(path: &PathBuf) -> String {
     path.file_name()
         .unwrap()
@@ -147,10 +141,6 @@ fn merge_language_maps(base: &mut HashMap<String, Count>, add: &HashMap<String, 
 fn add_into_map(base: &mut HashMap<String, Count>, add: &Count, language: &String) {
     match base.get(language) {
         None => { base.insert(language.clone(), add.clone()); }
-        Some(v) => { base.insert(language.clone(), add_counts(v, add)); }
+        Some(v) => { base.insert(language.clone(), v.add(*add)); }
     }
-}
-
-fn add_counts(a: &Count, b: &Count) -> Count {
-    a.add(*b)
 }
