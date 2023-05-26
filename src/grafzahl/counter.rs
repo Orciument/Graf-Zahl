@@ -1,29 +1,43 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::ops::Add;
 use std::path::{Path, PathBuf};
 
 use once_cell::sync::Lazy;
 
 use crate::grafzahl::languages::{import_languages, Language};
 
+/// Holds the three different Counts for a Folder or File
 #[derive(Debug, Copy, Clone)]
-pub struct LineData {
+pub struct Count {
     pub comment_count: u32,
     pub code_count: u32,
     pub empty_count: u32,
 }
 
+impl Add for Count {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            comment_count: self.comment_count + other.comment_count,
+            code_count: self.code_count + other.code_count,
+            empty_count: self.empty_count + other.empty_count,
+        }
+    }
+}
+
 pub(crate) static LANGUAGES: Lazy<Vec<Language>> = Lazy::new(import_languages);
 
-pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, LineData> {
-    let mut map: HashMap<String, LineData> = HashMap::new();
+pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, Count> {
+    let mut map: HashMap<String, Count> = HashMap::new();
 
     //TODO Threads
     for f in files_vec {
-        let counts = match count_lines(f) {
-            None => continue,
-            Some(x) => x,
+        let counts = match count_file(f) {
+            Err(_) => continue,
+            Ok(x) => x,
         };
 
         //If this Language was already encountered bevor we add it to the current Object,
@@ -42,18 +56,26 @@ pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, LineData>
     map
 }
 
-pub fn count_lines(path: PathBuf) -> Option<(LineData, String)> {
+#[derive(Debug)]
+pub enum CountFileError {
+    LanguageNotFoundError,
+    IoError(std::io::Error),
+}
+
+pub fn count_file(path: PathBuf) -> Result<(Count, String), CountFileError> {
+    //TODO Check if Path is really a file
+
     let lang = match get_lang(&path) {
-        None => return None,
+        None => return Err(CountFileError::LanguageNotFoundError),
         Some(x) => x,
     };
 
     let file = match File::open(&path) {
         Ok(x) => x,
-        Err(_) => return None,
+        Err(e) => return Err(CountFileError::IoError(e)),
     };
 
-    let mut line_data = LineData {
+    let mut line_data = Count {
         comment_count: 0,
         code_count: 0,
         empty_count: 0,
@@ -65,6 +87,7 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, String)> {
             Ok(x) => x,
             Err(_) => continue,
         };
+        //TODO Add different counting options
 
         // //Char Count Start
         // let char_count: u32 = l.len() as u32;
@@ -100,7 +123,7 @@ pub fn count_lines(path: PathBuf) -> Option<(LineData, String)> {
         // }
     }
 
-    Some((line_data, lang.name.clone()))
+    Ok((line_data, lang.name.clone()))
 }
 
 fn get_lang(p: &Path) -> Option<&Language> {

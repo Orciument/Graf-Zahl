@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::str::FromStr;
-use crate::{CONFIG_LOCATION, get_config_location};
+use crate::{get_config_location};
 
 #[derive(Debug, Clone)]
 pub struct Language {
