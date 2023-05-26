@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::ops::Add;
@@ -30,31 +29,6 @@ impl Add for Count {
 
 pub(crate) static LANGUAGES: Lazy<Vec<Language>> = Lazy::new(import_languages);
 
-pub fn count_project_files(files_vec: Vec<PathBuf>) -> HashMap<String, Count> {
-    let mut map: HashMap<String, Count> = HashMap::new();
-
-    //TODO Threads
-    for f in files_vec {
-        let counts = match count_file(f) {
-            Err(_) => continue,
-            Ok(x) => x,
-        };
-
-        //If this Language was already encountered bevor we add it to the current Object,
-        //rather than creating a duplicate one
-        match map.get_mut(&counts.1) {
-            None => {
-                map.insert(counts.1, counts.0);
-            }
-            Some(lang) => {
-                lang.code_count += counts.0.code_count;
-                lang.empty_count += counts.0.empty_count;
-                lang.comment_count += counts.0.comment_count;
-            }
-        };
-    }
-    map
-}
 
 #[derive(Debug)]
 pub enum CountFileError {
