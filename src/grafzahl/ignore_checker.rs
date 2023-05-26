@@ -1,5 +1,3 @@
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
@@ -7,15 +5,8 @@ use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
 use crate::{Cli, get_config_location};
-use crate::grafzahl::ignore_checker;
 
 static IGNORE_LIST: Lazy<Gitignore> = Lazy::new(|| init_ignore_list());
-
-enum IgnoreEntry {
-    Directory(String),
-    File(String),
-    Extension(String),
-}
 
 fn init_ignore_list() -> Gitignore {
     //TODO ignore_list should have file extension .gitignore

@@ -20,11 +20,22 @@ pub fn get_config_location() -> String {
 #[derive(StructOpt, Debug)]
 struct Cli {
     #[structopt(default_value = ".")]
+    ///Path to the directory or File that should be counted
     directory: String,
 
-    #[structopt(long = "tree_indexer", short = "t", help="Enable beta tree_indexer (will in the future allow to count per directory)")]
+    #[structopt(long = "tree_indexer", short = "t")]
+    ///Enable beta tree_indexer (allows count per directory, with -f)
     tree_indexer: bool,
+
+    #[structopt(short = "d")]
+    ///Enable debug mode (shows all found files and folders)
+    debug: bool,
+
+    #[structopt(short="f")]
+    ///Shows the LOC per Folder instead of a toplevel Language overview
+    per_folder: bool,
 }
+
 
 fn main() -> CliResult {
     let args = Cli::from_args();

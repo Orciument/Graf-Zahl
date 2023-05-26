@@ -1,6 +1,4 @@
-use std::any::Any;
 use std::collections::HashMap;
-use std::fmt::format;
 use std::ops::Add;
 use std::path::PathBuf;
 
@@ -15,6 +13,29 @@ pub(crate) struct Folder {
     pub(crate) members: Vec<FolderElement>,
     pub(crate) count: HashMap<String, Count>,
 }
+impl Folder {
+    pub(crate) fn total_count(&self) -> Count {
+        let mut total: Count = Count {
+            comment_count: 0,
+            code_count: 0,
+            empty_count: 0,
+        };
+        for value in self.count.values() {
+            total.comment_count += value.comment_count;
+            total.code_count += value.code_count;
+            total.empty_count += value.empty_count;
+        }
+        total
+    }
+
+    pub(crate) fn total(&self) -> u32 {
+        let mut total: u32 = 0;
+        for value in self.count.values() {
+            total += value.empty_count + value.code_count + value.comment_count;
+        }
+        total
+    }
+}
 
 pub(crate) enum FolderElement {
     Folder(Folder),
@@ -24,8 +45,7 @@ pub(crate) enum FolderElement {
 
 pub(crate) struct File {
     pub(crate) name: String,
-    pub(crate) extension: String,
-    pub(crate) language: String,
+     pub(crate) language: String,
     pub(crate) count: Count,
 }
 
@@ -67,7 +87,6 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
 
         return File(File {
             name,
-            extension,
             language: counted_file.1,
             count: counted_file.0,
         });
@@ -79,12 +98,7 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
 //Find all Entries of the directory
     for element_result in path.read_dir().unwrap() {
         let ele_path = element_result.unwrap().path();
-        let folder_element = scan_directory(&ele_path);
-        match folder_element {
-            //TODO Maybe include for debug purposes?
-            FolderEmpty => continue,
-            _ => members.push(folder_element)
-        }
+        members.push(scan_directory(&ele_path))
     }
 
 //Early return if Folder has no members
