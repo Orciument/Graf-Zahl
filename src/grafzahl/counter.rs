@@ -3,9 +3,8 @@ use std::io::{BufRead, BufReader};
 use std::ops::Add;
 use std::path::{Path, PathBuf};
 
-use once_cell::sync::Lazy;
-
-use crate::grafzahl::languages::{import_languages, Language};
+use crate::grafzahl::languages::Language;
+use crate::State;
 
 /// Holds the three different Counts for a Folder or File
 #[derive(Debug, Copy, Clone)]
@@ -27,19 +26,16 @@ impl Add for Count {
     }
 }
 
-pub(crate) static LANGUAGES: Lazy<Vec<Language>> = Lazy::new(import_languages);
-
-
 #[derive(Debug)]
 pub enum CountFileError {
     LanguageNotFoundError,
     IoError(std::io::Error),
 }
 
-pub fn count_file(path: PathBuf) -> Result<(Count, String), CountFileError> {
+pub fn count_file(path: PathBuf, state: &State) -> Result<(Count, String), CountFileError> {
     //TODO Check if Path is really a file
 
-    let lang = match get_lang(&path) {
+    let lang = match get_lang(&path, &state) {
         None => return Err(CountFileError::LanguageNotFoundError),
         Some(x) => x,
     };
@@ -100,7 +96,7 @@ pub fn count_file(path: PathBuf) -> Result<(Count, String), CountFileError> {
     Ok((line_data, lang.name.clone()))
 }
 
-fn get_lang(p: &Path) -> Option<&Language> {
+fn get_lang<'a>(p: &Path, state: &'a State) -> Option<&'a Language> {
     let ext = p.extension()?.to_str()?;
-    LANGUAGES.iter().find(|&lang| lang.file_extension.eq(ext))
+    state.languages.iter().find(|&lang| lang.file_extension.eq(ext))
 }

@@ -2,17 +2,19 @@ use std::collections::HashMap;
 use std::ops::Add;
 use std::path::PathBuf;
 
-use quicli::prelude::error;
+use quicli::prelude::{error};
 
 use crate::grafzahl::counter::{Count, count_file, CountFileError};
 use crate::grafzahl::ignore_checker;
 use crate::grafzahl::tree_indexer::FolderElement::*;
+use crate::State;
 
 pub(crate) struct Folder {
     pub(crate) name: String,
     pub(crate) members: Vec<FolderElement>,
     pub(crate) count: HashMap<String, Count>,
 }
+
 impl Folder {
     pub(crate) fn total_count(&self) -> Count {
         let mut total: Count = Count {
@@ -45,11 +47,11 @@ pub(crate) enum FolderElement {
 
 pub(crate) struct File {
     pub(crate) name: String,
-     pub(crate) language: String,
+    pub(crate) language: String,
     pub(crate) count: Count,
 }
 
-pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
+pub(crate) fn scan_directory(path: &PathBuf, state: &mut State) -> FolderElement {
     if !path.is_absolute() {
         panic!("Received Filepath is not absolut! {}", &path.display())
     }
@@ -60,7 +62,7 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
 
     //TODO Check if Path ends in "/" or ".."
 
-    if ignore_checker::check_if_ignored(&path) {
+    if ignore_checker::check_if_ignored(&path, &state) {
         return FolderEmpty;
     };
 
@@ -71,12 +73,10 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
         let extension = path.extension().unwrap_or("".as_ref())
             .to_str().unwrap().to_string();
 
-        let counted_file = match count_file(path.clone()) {
+        let counted_file = match count_file(path.clone(), state) {
             Ok(k) => k,
-            //TODO Add command line option to hide these
             Err(CountFileError::LanguageNotFoundError) => {
-                //TODO Remove multiple warnings for each filetype
-                println!("Language for this file was not found in the config! (extension:\"{}\"", extension);
+                state.missing_lang.insert(extension.clone());
                 return FolderEmpty;
             }
             Err(CountFileError::IoError(io)) => {
@@ -98,7 +98,7 @@ pub(crate) fn scan_directory(path: &PathBuf) -> FolderElement {
 //Find all Entries of the directory
     for element_result in path.read_dir().unwrap() {
         let ele_path = element_result.unwrap().path();
-        members.push(scan_directory(&ele_path))
+        members.push(scan_directory(&ele_path, state))
     }
 
 //Early return if Folder has no members
