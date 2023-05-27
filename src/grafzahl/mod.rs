@@ -1,5 +1,5 @@
 pub mod counter;
-mod languages;
+pub mod languages;
 mod tree_indexer;
 pub mod print_project;
-mod ignore_checker;
+pub mod ignore_checker;
