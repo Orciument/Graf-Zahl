@@ -1,14 +1,11 @@
 use std::path::PathBuf;
 
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
-use once_cell::sync::Lazy;
 use structopt::StructOpt;
 
-use crate::{Cli, get_config_location};
+use crate::{Cli, get_config_location, AppState};
 
-static IGNORE_LIST: Lazy<Gitignore> = Lazy::new(|| init_ignore_list());
-
-fn init_ignore_list() -> Gitignore {
+pub fn init_ignore_list() -> Gitignore {
     //TODO ignore_list should have file extension .gitignore
     let path_buff = PathBuf::from(format!("{}/ignore_list.txt", get_config_location()));
     let args = Cli::from_args();
@@ -18,7 +15,7 @@ fn init_ignore_list() -> Gitignore {
     gitignore
 }
 
-pub fn check_if_ignored(path: &PathBuf) -> bool {
+pub fn check_if_ignored(path: &PathBuf, state: &AppState) -> bool {
     let is_dir = path.is_dir();
-    IGNORE_LIST.matched(path.as_path(), is_dir).is_ignore()
+    state.ignore.matched(path.as_path(), is_dir).is_ignore()
 }
