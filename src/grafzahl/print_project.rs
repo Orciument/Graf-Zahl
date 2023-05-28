@@ -3,12 +3,12 @@ use std::path::PathBuf;
 use quicli::prelude::error;
 use structopt::StructOpt;
 
-use crate::{Cli, State};
+use crate::{Cli, AppState};
 use crate::grafzahl::counter::Count;
 use crate::grafzahl::tree_indexer::{File, Folder, FolderElement, get_name, scan_directory};
 use crate::grafzahl::tree_indexer::FolderElement::*;
 
-pub fn count_from_path(path: PathBuf, state: &mut State) {
+pub fn count_from_path(path: PathBuf, state: &mut AppState) {
     let can_path = path.canonicalize().expect(&*format!("Absolut Path could not be found for Path: {}", path.display()));
     let dir = scan_directory(&can_path, state);
 
