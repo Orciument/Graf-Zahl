@@ -1,13 +1,16 @@
-use std::fs::File;
+use std::{fs, io};
 use std::io::{BufRead, BufReader};
 use std::ops::Add;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
+use crate::grafzahl::counter::CountFileError::{EncodingNotSupported, IoError, LanguageNotFoundError, NoFileExtension};
 use crate::grafzahl::languages::Language;
-use crate::State;
+use crate::grafzahl::tree_indexer;
+use crate::grafzahl::tree_indexer::{File, FolderElement};
+use crate::grafzahl::tree_indexer::FolderElement::FolderEmpty;
 
 /// Holds the three different Counts for a Folder or File
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct Count {
     pub comment_count: u32,
     pub code_count: u32,
@@ -28,75 +31,49 @@ impl Add for Count {
 
 #[derive(Debug)]
 pub enum CountFileError {
-    LanguageNotFoundError,
-    IoError(std::io::Error),
+    LanguageNotFoundError(String),
+    NoFileExtension,
+    EncodingNotSupported,
+    IoError(io::Error),
 }
 
-pub fn count_file(path: PathBuf, state: &State) -> Result<(Count, String), CountFileError> {
-    //TODO Check if Path is really a file
+impl From<io::Error> for CountFileError {
+    fn from(value: io::Error) -> Self {
+        return IoError(value);
+    }
+}
 
-    let lang = match get_lang(&path, &state) {
-        None => return Err(CountFileError::LanguageNotFoundError),
-        Some(x) => x,
+pub(crate) fn count_file(path: &PathBuf, languages: &Vec<Language>) -> Result<File, CountFileError> {
+    assert!(path.is_absolute(), "Received Filepath is not absolut! {}", &path.display());
+    assert!(path.exists(), "No File/Folder exists at this Path! {}", &path.display());
+    assert!(path.is_file(), "Path is not a File! {}", &path.display());
+
+    let ext = path.extension().ok_or_else(|| { NoFileExtension })?.to_str().expect("Can't convert Filename into UTF-8 String!");
+
+    let Some(lang) = languages.iter().find(|&lang| lang.file_extension.eq(ext)) else {
+        return Err(LanguageNotFoundError(ext.to_string()));
     };
 
-    let file = match File::open(&path) {
-        Ok(x) => x,
-        Err(e) => return Err(CountFileError::IoError(e)),
-    };
-
-    let mut line_data = Count {
-        comment_count: 0,
-        code_count: 0,
-        empty_count: 0,
-    };
+    let file = fs::File::open(&path)?;
+    let mut line_data: Count = Default::default();
 
     let lines = BufReader::new(file).lines();
-    for l_opt in lines {
-        let l = match l_opt {
-            Ok(x) => x,
-            Err(_) => continue,
-        };
-        //TODO Add different counting options
+    for line_result in lines {
+        let l = &line_result.or_else(|_| { Err(EncodingNotSupported) })?;
 
-        // //Char Count Start
-        // let char_count: u32 = l.len() as u32;
-        // if l.contains(&lang.comment_symbol) {
-        //     line_data.comment_count += &char_count;
-        //     continue;
-        // } else if l.trim().is_empty() {
-        //     line_data.empty_count += &char_count;
-        // } else {
-        //     line_data.code_count += &char_count;
-        // }
-        // //Char Count End
-
-        //Word Count Start
-        let word_count: u32 = l.trim().split(' ').count() as u32;
         if l.contains(&lang.comment_symbol) {
-            line_data.comment_count += &word_count;
-            continue;
+            line_data.comment_count += 1;
         } else if l.trim().is_empty() {
-            line_data.empty_count += &word_count;
+            line_data.empty_count += 1;
         } else {
-            line_data.code_count += &word_count;
+            line_data.code_count += 1;
         }
-        //Word Count End
-
-        // if l.contains(&lang.comment_symbol) {
-        //     line_data.comment_count += 1;
-        //     continue;
-        // } else if l.trim().is_empty() {
-        //     line_data.empty_count += 1;
-        // } else {
-        //     line_data.code_count += 1;
-        // }
     }
 
-    Ok((line_data, lang.name.clone()))
-}
-
-fn get_lang<'a>(p: &Path, state: &'a State) -> Option<&'a Language> {
-    let ext = p.extension()?.to_str()?;
-    state.languages.iter().find(|&lang| lang.file_extension.eq(ext))
+    Ok(File {
+        //TODO This beauty should get a visit
+        name: (path.file_name().unwrap().to_str().unwrap().to_string()).parse().unwrap(),
+        language: lang.name.clone(),
+        count: line_data,
+    })
 }
