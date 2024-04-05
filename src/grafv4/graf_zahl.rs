@@ -13,8 +13,11 @@ struct TreeNode {
     ignored: bool,
 }
 
-pub fn count_entrypoint(path: &PathBuf, state: &AppState) {
-    //TODO canonicalize
+pub fn count_entrypoint(og_path: &PathBuf, state: &AppState) {
+    let path = &og_path.canonicalize()
+        .expect(&*format!("Absolut Path could not be found for Path: {}", og_path.display()));
+    assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
+    assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
     let count = match state.count_mode {
         CountMode::Line => count_path::<LinesCount>(path, state).0,
@@ -26,8 +29,8 @@ pub fn count_entrypoint(path: &PathBuf, state: &AppState) {
 }
 
 fn count_path<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNode, CountMode) {
-    assert!(path.is_absolute(), "Received Filepath is not absolut! {}", &path.display());
-    assert!(path.exists(), "No File/Folder exists at this Path: {}", &path.display());
+    assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
+    assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
     // This unwrap is safe, because all "/.." are resolved when we canonicalize the Path
     let name = path.file_name().unwrap()

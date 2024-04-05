@@ -20,8 +20,8 @@ impl Display for ReadFileError {
 }
 
 pub(crate) fn read_file(path: &PathBuf) -> Result<Vec<String>, ReadFileError> {
-    assert!(path.is_absolute(), "Received Filepath is not absolut! {}", &path.display());
-    assert!(path.exists(), "No File/Folder exists at this Path: {}", &path.display());
+    assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
+    assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
     let file = match File::open(&path) {
         Ok(v) => v,
