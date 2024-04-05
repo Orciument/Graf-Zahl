@@ -4,19 +4,20 @@ use std::ops::Add;
 use crate::grafv4::countable::Countable;
 
 #[derive(Default, Copy, Clone)]
-pub(crate) struct LinesCount {
+pub(crate) struct LineTypeCount {
     pub comment_count: u32,
     pub code_count: u32,
     pub empty_count: u32,
 }
 
-impl Countable for LinesCount {
+impl Countable for LineTypeCount {
     fn count(content: Vec<String>, _: &str) -> Box<Self> {
-        todo!()
+        //TODO
+        return Box::from(LineTypeCount::default());
     }
 }
 
-impl Add for LinesCount {
+impl Add for LineTypeCount {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -28,15 +29,15 @@ impl Add for LinesCount {
     }
 }
 
-impl Sum for LinesCount {
+impl Sum for LineTypeCount {
     fn sum<I: Iterator<Item=Self>>(iter: I) -> Self {
-        iter.fold(LinesCount::default(), |acc, num| acc + num)
+        iter.fold(LineTypeCount::default(), |acc, num| acc + num)
     }
 }
 
-impl Display for LinesCount {
+impl Display for LineTypeCount {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f,"(LoC: {}, Comment: {}, NewLines: {})", self.code_count, self.comment_count, self.empty_count)
     }
 }
 
