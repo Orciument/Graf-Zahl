@@ -1,7 +1,8 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use crate::AppState;
+use crate::{AppState, CountMode};
 use crate::grafv4::countable::Countable;
+use crate::grafv4::count_modes::lines::LinesCount;
 use crate::grafv4::io_reader::{read_dir, read_file};
 use crate::grafzahl::ignore_checker;
 
@@ -12,17 +13,19 @@ struct TreeNode {
     ignored: bool,
 }
 
-pub fn count_entrypoint(path: PathBuf, state: &AppState) {
+pub fn count_entrypoint(path: &PathBuf, state: &AppState) {
     //TODO canonicalize
 
-    //TODO match for all CountModes, set the type parameter, and give a lambda with the right classifier
-
-    // let count = count_path::<countModeType>(path, state).0;
+    let count = match state.count_mode {
+        CountMode::Line => count_path::<LinesCount>(path, state).0,
+        CountMode::Word => TreeNode::default(),
+        CountMode::Char => TreeNode::default(),
+    };
 
     //TODO display
 }
 
-fn count_path<CountMode: Countable>(path: PathBuf, state: &AppState) -> (TreeNode, CountMode) {
+fn count_path<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNode, CountMode) {
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", &path.display());
     assert!(path.exists(), "No File/Folder exists at this Path: {}", &path.display());
 
@@ -42,11 +45,11 @@ fn count_path<CountMode: Countable>(path: PathBuf, state: &AppState) -> (TreeNod
         // Recursion
         count_folder(&path, state, &name)
     } else {
-        count_file(path, name)
+        count_file(path, &name)
     };
 }
 
-fn count_file<CountMode: Countable>(path: PathBuf, name: String) -> (TreeNode, CountMode) {
+fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode, CountMode) {
     let ext = path.extension()
         .unwrap_or_else(|| OsStr::new(""))
         .to_str().expect("Can't convert Filename into UTF-8 String!");
@@ -60,24 +63,21 @@ fn count_file<CountMode: Countable>(path: PathBuf, name: String) -> (TreeNode, C
             }, CountMode::default());
         }
     };
+    let count = CountMode::count(file, ext);
     return (TreeNode {
-        string: format!("{name} ->"),
+        string: format!("{name} -> {count}"),
         ..Default::default()
-    }, *CountMode::count(file, ext));
+    }, *count);
 }
 
 fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &String) -> (TreeNode, CountMode) {
     let members: Vec<(TreeNode, CountMode)> = match read_dir(path) {
+        Ok(v) => v.iter().map(|p| count_path(p, state)).collect(),
         Err(e) => {
             return (TreeNode {
                 string: format!("{name} -> Err: {e}"),
                 ..Default::default()
             }, CountMode::default());
-        }
-        Ok(v) => {
-            v.into_iter()
-                .map(|p| count_path(p, state))
-                .collect()
         }
     };
     let member_sum = members.iter().map(|x| x.1.clone()).sum();
