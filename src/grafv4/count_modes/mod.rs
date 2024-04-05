@@ -1,2 +1,2 @@
-mod lines;
-mod language;
+pub(crate) mod lines;
+pub(crate) mod language;
