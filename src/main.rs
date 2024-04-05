@@ -37,8 +37,10 @@ pub enum CountMode {
 }
 
 impl FromStr for CountMode {
-    type Err = NotAnOptionError;
+    type Err = String;
+
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        println!("CountMode");
         return match s.to_ascii_lowercase().as_str() {
             "line" => Ok(Line),
             "loc" => Ok(LOC),
@@ -46,23 +48,43 @@ impl FromStr for CountMode {
             "language" => Ok(Language),
             "languageloc" => Ok(LanguageLOC),
             "langloc" => Ok(LanguageLOC),
-            &_ => Err(NotAnOptionError)
+            _ => Err(String::from("NotAnOption: LINE, LOC, LANGUAGE, LANGUAGELOC"))
         };
     }
 }
 
-impl Display for CountMode {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+
+#[derive(StructOpt, Debug)]
+pub(crate) enum Override {
+    Enable,
+    Disable,
+    None,
+}
+
+impl Override {
+    pub(crate) fn to_bool_or(self, default: bool) -> bool {
+        return match self {
+            Override::Enable => true,
+            Override::Disable => false,
+            Override::None => default,
+        };
     }
 }
 
-#[derive(Debug)]
-pub struct NotAnOptionError;
+impl FromStr for Override {
+    type Err = String;
 
-impl Display for NotAnOptionError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        println!("Override");
+        return match s.to_ascii_lowercase().as_str() {
+            "on" => Ok(Override::Enable),
+            "enable" => Ok(Override::Enable),
+            "off" => Ok(Override::Disable),
+            "disable" => Ok(Override::Disable),
+            "none" => Ok(Override::None),
+            "default" => Ok(Override::None),
+            _ => Err(String::from("NotAnOption: ON, OFF"))
+        };
     }
 }
 
@@ -80,21 +102,26 @@ struct Cli {
     /// Disable/override ignore list and search every file
     disable_ignore_list: bool,
 
+    #[structopt(short = "s", long = "silent")]
+    /// Hide all errors that occur
+    hide_errors: bool,
+
     #[structopt(short = "c")]
     /// Show location of current config files
     show_config: bool,
 
-    #[structopt(short = "s")]
+    #[structopt(short = "u", default_value = "none")]
     /// Show a Summary of all Counts for all Files
-    summary: bool,
+    summary: Override,
     //TODO add real summary mode, maybe return a accumulator at each step and add them all together.
     // that way it won't be a tree, but there will be the final count at the end to make the summary
 
-    #[structopt(short = "p", long="per-file")]
+    #[structopt(short = "p", default_value = "none", long = "per-file")]
     /// Show the Count for each File individually
-    per_file: bool,
+    per_file: Override,
 
-    #[structopt(short = "m", default_value = "loc")]
+    #[structopt(short = "m", default_value = "loc", long = "mode")]
+    /// How file are to be counted
     mode: CountMode,
 }
 
