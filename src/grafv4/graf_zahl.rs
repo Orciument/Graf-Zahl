@@ -2,15 +2,16 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use crate::{AppState, CountMode};
 use crate::grafv4::countable::Countable;
-use crate::grafv4::count_modes::lines::LinesCount;
+use crate::grafv4::count_modes::line_type::LineTypeCount;
+use crate::grafv4::count_modes::line::LineCount;
 use crate::grafv4::io_reader::{read_dir, read_file};
 use crate::grafzahl::ignore_checker;
 
 #[derive(Default, Clone)]
-struct TreeNode {
-    string: String,
-    members: Vec<TreeNode>,
-    ignored: bool,
+pub(crate) struct TreeNode {
+    pub(crate) string: String,
+    pub(crate) members: Vec<TreeNode>,
+    pub(crate) ignored: bool,
 }
 
 pub fn count_entrypoint(og_path: &PathBuf, state: &AppState) {
@@ -20,12 +21,27 @@ pub fn count_entrypoint(og_path: &PathBuf, state: &AppState) {
     assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
     let count = match state.count_mode {
-        CountMode::Line => count_path::<LinesCount>(path, state).0,
-        CountMode::Word => TreeNode::default(),
+        CountMode::Line => count_path::<LineCount>(path, state).0,
+        CountMode::Word => count_path::<LineTypeCount>(path, state).0,
         CountMode::Char => TreeNode::default(),
     };
 
-    //TODO display
+    if path.is_dir() {
+        println!("Project: {}", count.string);
+    } else {
+        println!("Project: {}", count.string);
+    }
+    print_node(count, 0);
+}
+
+fn print_node(node: TreeNode, indent_size: usize) {
+    //TODO                \/ Debug option
+    if node.ignored && !false { return; }
+    let indent = "  ".repeat(indent_size);
+    println!("{indent}|- {}", node.string);
+    for member in node.members {
+        print_node(member, indent_size + 1);
+    }
 }
 
 fn count_path<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNode, CountMode) {
@@ -38,7 +54,7 @@ fn count_path<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNo
 
     if ignore_checker::check_if_ignored(&path, &state) {
         return (TreeNode {
-            string: format!("{name} is ignored!"),
+            string: format!("{name} => [IGNORED!]"),
             ignored: true,
             ..Default::default()
         }, CountMode::default());
@@ -61,7 +77,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode,
         Ok(v) => v,
         Err(e) => {
             return (TreeNode {
-                string: format!("{name} -> Err: {e}"),
+                string: format!("{name} => [ERR]: {e}"),
                 ..Default::default()
             }, CountMode::default());
         }
@@ -78,7 +94,7 @@ fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &S
         Ok(v) => v.iter().map(|p| count_path(p, state)).collect(),
         Err(e) => {
             return (TreeNode {
-                string: format!("{name} -> Err: {e}"),
+                string: format!("{name}/ => [ERR]: {e}"),
                 ..Default::default()
             }, CountMode::default());
         }
@@ -86,7 +102,7 @@ fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &S
     let member_sum = members.iter().map(|x| x.1.clone()).sum();
     let member_strings = members.iter().map(|x| x.0.clone()).collect();
     return (TreeNode {
-        string: format!("{name} -> {member_sum}"),
+        string: format!("{name}/ => {member_sum}"),
         members: member_strings,
         ignored: false,
     }, member_sum);
