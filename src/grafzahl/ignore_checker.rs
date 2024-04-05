@@ -16,6 +16,5 @@ pub fn init_ignore_list() -> Gitignore {
 }
 
 pub fn check_if_ignored(path: &PathBuf, state: &AppState) -> bool {
-    let is_dir = path.is_dir();
-    state.ignore.matched(path.as_path(), is_dir).is_ignore()
+    state.ignore.matched(path.as_path(), path.is_dir()).is_ignore()
 }

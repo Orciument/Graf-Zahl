@@ -5,9 +5,7 @@ use std::path::PathBuf;
 
 use crate::grafzahl::counter::CountFileError::{EncodingNotSupported, IoError, LanguageNotFoundError, NoFileExtension};
 use crate::grafzahl::languages::Language;
-use crate::grafzahl::tree_indexer;
-use crate::grafzahl::tree_indexer::{File, FolderElement};
-use crate::grafzahl::tree_indexer::FolderElement::FolderEmpty;
+use crate::grafzahl::tree_indexer::File;
 
 /// Holds the three different Counts for a Folder or File
 #[derive(Debug, Copy, Clone, Default)]
