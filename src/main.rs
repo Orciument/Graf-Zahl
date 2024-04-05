@@ -16,13 +16,6 @@ use crate::grafv4::graf_zahl::count_entrypoint;
 mod grafzahl;
 mod grafv4;
 
-//TODO you can decuple the render of a file from the displaying of the result
-// so you can just "render" the result, a error, the result, whatever; with a render function,
-// save the result string and the Language Values to a result object (just 0 when error) and
-// display when everything is finished.
-// that way you can render as you work on the tree, and don't need to bring errors all the way up the chain,
-// but can also display the result as a tree
-
 pub fn get_config_location() -> String {
     const CONFIG_LOCATION: &str = "%LOCALAPPDATA%/graf-zahl";
     CONFIG_LOCATION.replace("%LOCALAPPDATA%", &env::var("LOCALAPPDATA").expect("Can't find Value for Env. %LOCALAPPDATA%"))
@@ -133,13 +126,13 @@ pub struct AppState {
 
 
 fn main() -> CliResult {
-    let args = Cli::from_args();
-    if args.show_config {
+    let cli = Cli::from_args();
+    if cli.show_config {
         println!("The Config is located at: ");
         println!("{}", get_config_location());
         return Ok(());
     }
-    let ignore = if args.disable_ignore_list {
+    let ignore = if cli.disable_ignore_list {
         init_empty_list()
     } else {
         init_ignore_list()
@@ -150,7 +143,7 @@ fn main() -> CliResult {
         missing_lang: HashSet::new(),
     };
 
-    count_entrypoint(&PathBuf::from(&args.directory), &mut state, args);
+    count_entrypoint(&PathBuf::from(&cli.directory), &mut state, cli);
     //TODO Display missing Langs
     //TODO Add command line option to hide missing Langs
     Ok(())
