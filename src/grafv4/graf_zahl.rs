@@ -1,6 +1,6 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use crate::{AppState, CountMode};
+use crate::{AppState, Cli, CountMode};
 use crate::grafv4::countable::Countable;
 use crate::grafv4::count_modes::line_type::LineTypeCount;
 use crate::grafv4::count_modes::line::LineCount;
@@ -14,33 +14,36 @@ pub(crate) struct TreeNode {
     pub(crate) ignored: bool,
 }
 
-pub fn count_entrypoint(og_path: &PathBuf, state: &AppState) {
+pub fn count_entrypoint(og_path: &PathBuf, state: &AppState, cli: Cli) {
     let path = &og_path.canonicalize()
         .expect(&*format!("Absolut Path could not be found for Path: {}", og_path.display()));
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
     assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
-    let count = match state.count_mode {
+    let count = match cli.mode {
         CountMode::Line => count_path::<LineCount>(path, state).0,
-        CountMode::Word => count_path::<LineTypeCount>(path, state).0,
-        CountMode::Char => TreeNode::default(),
+        CountMode::LOC => count_path::<LineTypeCount>(path, state).0,
+        _ => TreeNode::default(),
     };
 
-    if path.is_dir() {
-        println!("Project: {}", count.string);
-    } else {
-        println!("Project: {}", count.string);
+    if cli.summary {
+        if path.is_dir() {
+            println!("Project: {}", count.string);
+        } else {
+            println!("Project: {}", count.string);
+        }
     }
-    print_node(count, 0);
+    if cli.per_file {
+        print_node(count, 0, cli.debug);
+    }
 }
 
-fn print_node(node: TreeNode, indent_size: usize) {
-    //TODO                \/ Debug option
-    if node.ignored && !false { return; }
+fn print_node(node: TreeNode, indent_size: usize, debug: bool) {
+    if node.ignored && !debug { return; }
     let indent = "  ".repeat(indent_size);
     println!("{indent}|- {}", node.string);
     for member in node.members {
-        print_node(member, indent_size + 1);
+        print_node(member, indent_size + 1, debug);
     }
 }
 
@@ -52,7 +55,7 @@ fn count_path<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNo
     let name = path.file_name().unwrap()
         .to_str().expect("Unable to convert File/Folder Name into Unicode!").to_string();
 
-    if ignore_checker::check_if_ignored(&path, &state) {
+    if state.ignore.matched(path.as_path(), path.is_dir()).is_ignore() {
         return (TreeNode {
             string: format!("{name} => [IGNORED!]"),
             ignored: true,
@@ -77,7 +80,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode,
         Ok(v) => v,
         Err(e) => {
             return (TreeNode {
-                string: format!("{name} => [ERR]: {e}"),
+                string: format!("{name} => [ERR] {e}"),
                 ..Default::default()
             }, CountMode::default());
         }
@@ -94,7 +97,7 @@ fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &S
         Ok(v) => v.iter().map(|p| count_path(p, state)).collect(),
         Err(e) => {
             return (TreeNode {
-                string: format!("{name}/ => [ERR]: {e}"),
+                string: format!("{name}/ => [ERR] {e}"),
                 ..Default::default()
             }, CountMode::default());
         }

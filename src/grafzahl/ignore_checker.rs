@@ -15,6 +15,10 @@ pub fn init_ignore_list() -> Gitignore {
     gitignore
 }
 
+pub fn init_empty_list() -> Gitignore {
+    GitignoreBuilder::new(PathBuf::new()).build().unwrap()
+}
+
 pub fn check_if_ignored(path: &PathBuf, state: &AppState) -> bool {
     state.ignore.matched(path.as_path(), path.is_dir()).is_ignore()
 }
