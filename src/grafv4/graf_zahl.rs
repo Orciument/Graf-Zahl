@@ -5,13 +5,13 @@ use crate::grafv4::countable::Countable;
 use crate::grafv4::count_modes::line_type::LineTypeCount;
 use crate::grafv4::count_modes::line::LineCount;
 use crate::grafv4::io_reader::{read_dir, read_file};
-use crate::grafzahl::ignore_checker;
 
 #[derive(Default, Clone)]
 pub(crate) struct TreeNode {
     pub(crate) string: String,
     pub(crate) members: Vec<TreeNode>,
     pub(crate) ignored: bool,
+    pub(crate) errored: bool,
 }
 
 pub fn count_entrypoint(og_path: &PathBuf, state: &AppState, cli: Cli) {
@@ -20,30 +20,46 @@ pub fn count_entrypoint(og_path: &PathBuf, state: &AppState, cli: Cli) {
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
     assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
+    let enable_summary;
+    let enable_per_file;
+
     let count = match cli.mode {
-        CountMode::Line => count_path::<LineCount>(path, state).0,
-        CountMode::LOC => count_path::<LineTypeCount>(path, state).0,
-        _ => TreeNode::default(),
+        CountMode::Line => {
+            enable_summary = cli.summary.to_bool_or(true);
+            enable_per_file = cli.per_file.to_bool_or(true);
+            count_path::<LineCount>(path, state).0
+        },
+        CountMode::LOC => {
+            enable_summary = cli.summary.to_bool_or(true);
+            enable_per_file = cli.per_file.to_bool_or(true);
+            count_path::<LineTypeCount>(path, state).0
+        },
+        _ => {
+            enable_summary = cli.summary.to_bool_or(true);
+            enable_per_file = cli.per_file.to_bool_or(false);
+            TreeNode::default()
+        },
     };
 
-    if cli.summary {
+    if enable_summary {
         if path.is_dir() {
             println!("Project: {}", count.string);
         } else {
             println!("Project: {}", count.string);
         }
     }
-    if cli.per_file {
-        print_node(count, 0, cli.debug);
+    if enable_per_file {
+        print_node(count, 0, cli.debug, cli.hide_errors);
     }
 }
 
-fn print_node(node: TreeNode, indent_size: usize, debug: bool) {
+fn print_node(node: TreeNode, indent_size: usize, debug: bool, hide_errors: bool) {
+    if node.errored && hide_errors { return; }
     if node.ignored && !debug { return; }
     let indent = "  ".repeat(indent_size);
     println!("{indent}|- {}", node.string);
     for member in node.members {
-        print_node(member, indent_size + 1, debug);
+        print_node(member, indent_size + 1, debug, hide_errors);
     }
 }
 
@@ -81,6 +97,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode,
         Err(e) => {
             return (TreeNode {
                 string: format!("{name} => [ERR] {e}"),
+                errored: true,
                 ..Default::default()
             }, CountMode::default());
         }
@@ -98,6 +115,7 @@ fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &S
         Err(e) => {
             return (TreeNode {
                 string: format!("{name}/ => [ERR] {e}"),
+                errored: true,
                 ..Default::default()
             }, CountMode::default());
         }
@@ -107,6 +125,6 @@ fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &S
     return (TreeNode {
         string: format!("{name}/ => {member_sum}"),
         members: member_strings,
-        ignored: false,
+        ..Default::default()
     }, member_sum);
 }
