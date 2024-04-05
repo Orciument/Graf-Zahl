@@ -27,7 +27,7 @@ impl Display for LanguageCount {
 }
 
 impl Countable for LanguageCount {
-    fn count(_: Vec<String>) -> Box<Self> {
+    fn count(content: Vec<String>, extension: &str) -> Box<Self> {
         todo!()
     }
 }
