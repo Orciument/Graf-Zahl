@@ -11,7 +11,7 @@ pub(crate) struct LinesCount {
 }
 
 impl Countable for LinesCount {
-    fn count(_: Vec<String>) -> Box<Self> {
+    fn count(content: Vec<String>, _: &str) -> Box<Self> {
         todo!()
     }
 }

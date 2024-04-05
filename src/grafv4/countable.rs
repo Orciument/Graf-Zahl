@@ -3,5 +3,5 @@ use std::iter::Sum;
 use std::ops::Add;
 
 pub(crate) trait Countable: Add + Sum + Display + Default + Clone {
-    fn count(_: Vec<String>) -> Box<Self>;
+    fn count(content: Vec<String>, extension: &str) -> Box<Self>;
 }
