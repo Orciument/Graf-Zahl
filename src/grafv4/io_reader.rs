@@ -14,7 +14,7 @@ impl Display for ReadFileError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             IoError(e) => write!(f, "IoError: {e}"),
-            EncodingNotSupported => write!(f, "EncodingNotSupported"),
+            EncodingNotSupported => write!(f, "EncodingNotSupported: Non Unicode"),
         }
     }
 }
