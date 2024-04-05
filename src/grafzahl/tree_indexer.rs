@@ -44,6 +44,7 @@ pub(crate) enum FolderElement {
     File(File),
 }
 
+#[derive(Debug, Clone, Default)]
 pub(crate) struct File {
     pub(crate) name: String,
     pub(crate) language: String,
