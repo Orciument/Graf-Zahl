@@ -12,7 +12,10 @@ pub(crate) enum ReadFileError {
 
 impl Display for ReadFileError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self)
+        match self {
+            IoError(e) => write!(f, "IoError: {e}"),
+            EncodingNotSupported => write!(f, "EncodingNotSupported"),
+        }
     }
 }
 
