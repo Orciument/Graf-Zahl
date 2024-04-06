@@ -2,10 +2,10 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
 use crate::{AppState, Cli};
-use crate::grafv4::count_mode_selector::CountMode::*;
-use crate::grafv4::count_modes::language::LanguageCount;
-use crate::grafv4::count_modes::line::LineCount;
-use crate::grafv4::count_modes::line_type::LineTypeCount;
+use crate::grafv4::count_mode::CountMode::*;
+use crate::grafv4::count_mode_lib::language::LanguageCount;
+use crate::grafv4::count_mode_lib::line::LineCount;
+use crate::grafv4::count_mode_lib::line_type::LineTypeCount;
 use crate::grafv4::graf_zahl::generic_count;
 
 pub fn execute_count_mode(unsafe_path: &PathBuf, state: &AppState, cli: Cli) {
