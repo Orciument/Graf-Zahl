@@ -1,7 +1,7 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use crate::{AppState, Cli};
-use crate::grafzahl::countable::Countable;
+use crate::grafzahl::count_modes::countable::Countable;
 use crate::grafzahl::io_reader::{read_dir, read_file};
 
 #[derive(Default, Clone)]

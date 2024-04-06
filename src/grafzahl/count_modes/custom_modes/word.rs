@@ -2,12 +2,12 @@ use std::fmt::{Display, Formatter};
 use std::iter::Sum;
 use std::ops::Add;
 use crate::AppState;
-use crate::grafzahl::countable::Countable;
+use crate::grafzahl::count_modes::countable::Countable;
 
 #[derive(Default, Clone)]
-pub(crate) struct CharCount(u32);
+pub(crate) struct WordCount(u32);
 
-impl Add for CharCount {
+impl Add for WordCount {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -15,38 +15,40 @@ impl Add for CharCount {
     }
 }
 
-impl Sum for CharCount {
+impl Sum for WordCount {
     fn sum<I: Iterator<Item=Self>>(iter: I) -> Self {
         iter.fold(Self::default(), |acc, num| acc + num)
     }
 }
 
-impl Display for CharCount {
+impl Display for WordCount {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl Countable for CharCount {
+impl Countable for WordCount {
     fn count(content: Vec<String>, _: &str, _: &AppState) -> Result<Self, String> {
         let mut count: u32 = 0;
         for line in content {
-            count += line.len() as u32;
+            count += line.trim().split_whitespace().count() as u32;
         }
         return Ok(Self(count));
     }
 
     fn display_summary(self, project_name: String) {
-        println!("Project: {} => {} Character", project_name, self);
+        println!("Project: {} => {} Words", project_name, self);
     }
 
     fn display_legend() {
-        println!("Legend: => Amount of Chars")
+        println!("Legend: => Amount of Words");
     }
 
     fn display_description() {
-        println!("Counting Mode: Character Count");
+        println!("Counting Mode: Word Count");
         println!("--------------------------------------------------");
-        println!("Count all Characters within a File!");
+        println!("Count all Word within a File!");
+        println!("Something is considered a Word when it is seperated by Unicode whitespace.");
+        println!("Example: \"x = 4 + 5\" would count as 5 Words.");
     }
 }
