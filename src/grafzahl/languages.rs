@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::str::FromStr;
-use crate::{get_config_location};
+use crate::{AppState, get_config_location};
 
 #[derive(Debug, Clone)]
 pub struct Language {
@@ -83,4 +83,10 @@ pub fn import_languages() -> Vec<Language> {
         languages.push(lang);
     }
     languages
+}
+
+pub(crate) fn get_lang<'a>(extension: &str, state: &'a AppState) -> Result<&'a Language, String> {
+    state.languages.iter()
+        .find(|x| x.file_extension == extension)
+        .ok_or(format!("LanguageNotFound: .{}", extension))
 }

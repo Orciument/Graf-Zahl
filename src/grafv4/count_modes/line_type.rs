@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use crate::AppState;
 use crate::grafv4::countable::Countable;
+use crate::grafzahl::languages::{get_lang};
 
 #[derive(Default, Copy, Clone)]
 pub(crate) struct LineTypeCount {
@@ -12,9 +13,20 @@ pub(crate) struct LineTypeCount {
 }
 
 impl Countable for LineTypeCount {
-    fn count(content: Vec<String>, _: &str, _: &AppState) -> Result<Self, String> {
-        //TODO
-        return Ok(LineTypeCount::default());
+    fn count(content: Vec<String>, extension: &str, state: &AppState) -> Result<Self, String> {
+        let lang = get_lang(extension, state)?;
+
+        let mut line_data: LineTypeCount = Default::default();
+        for l in content {
+            if l.contains(&lang.comment_symbol) {
+                line_data.comment_count += 1;
+            } else if l.trim().is_empty() {
+                line_data.empty_count += 1;
+            } else {
+                line_data.code_count += 1;
+            }
+        }
+        return Ok(line_data);
     }
 
     fn display_summary(self, project_name: String) {

@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use crate::AppState;
 use crate::grafv4::countable::Countable;
+use crate::grafzahl::languages::get_lang;
 
 #[derive(Default, Clone)]
 pub(crate) struct LanguageCount(HashMap<String, u32>);
@@ -37,9 +38,8 @@ impl Display for LanguageCount {
 
 impl Countable for LanguageCount {
     fn count(content: Vec<String>, extension: &str, state: &AppState) -> Result<Self, String> {
-        let lang = state.languages.iter()
-            .find(|x| x.file_extension == extension)
-            .ok_or(format!("LanguageNotFound: .{}", extension))?;
+        let lang = get_lang(extension, state)?;
+
         let mut map: HashMap<String, u32> = HashMap::new();
         map.insert(
             lang.name.clone(),
