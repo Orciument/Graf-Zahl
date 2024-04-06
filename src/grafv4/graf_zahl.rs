@@ -27,7 +27,7 @@ pub fn count_entrypoint(og_path: &PathBuf, state: &AppState, cli: Cli) {
         CountMode::LOC => do_count::<LineTypeCount>(state, &cli, path, true, true),
         CountMode::Language => do_count::<LanguageCount>(state, &cli, path, true, false),
         _ => {
-            //TODO display something, maybe
+            println!("This count mode is currently not supported, sorry!")
         }
     };
 }
@@ -81,11 +81,11 @@ fn count_path<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNo
         // Recursion
         count_folder(&path, state, &name)
     } else {
-        count_file(path, &name)
+        count_file(path, &name, state)
     };
 }
 
-fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode, CountMode) {
+fn count_file<CountMode: Countable>(path: &PathBuf, name: &String, state: &AppState) -> (TreeNode, CountMode) {
     let ext = path.extension()
         .unwrap_or_else(|| OsStr::new(""))
         .to_str().expect("Can't convert Filename into UTF-8 String!");
@@ -100,11 +100,20 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode,
             }, CountMode::default());
         }
     };
-    let count = CountMode::count(file, ext);
-    return (TreeNode {
-        string: format!("{name} => {count}"),
-        ..Default::default()
-    }, *count);
+    let count = CountMode::count(file, ext, state);
+    return match count {
+        Ok(v) =>
+            (TreeNode {
+                string: format!("{name} => {v}"),
+                ..Default::default()
+            }, v),
+        Err(e) =>
+            (TreeNode {
+                string: format!("{name} => [ERR] {e}"),
+                errored: true,
+                ..Default::default()
+            }, CountMode::default())
+    };
 }
 
 fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &String) -> (TreeNode, CountMode) {

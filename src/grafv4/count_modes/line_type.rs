@@ -1,6 +1,7 @@
 use std::iter::Sum;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
+use crate::AppState;
 use crate::grafv4::countable::Countable;
 
 #[derive(Default, Copy, Clone)]
@@ -11,9 +12,9 @@ pub(crate) struct LineTypeCount {
 }
 
 impl Countable for LineTypeCount {
-    fn count(content: Vec<String>, _: &str) -> Box<Self> {
+    fn count(content: Vec<String>, _: &str, _: &AppState) -> Result<Self, String> {
         //TODO
-        return Box::from(LineTypeCount::default());
+        return Ok(LineTypeCount::default());
     }
 
     fn display_summary(self, project_name: String) {

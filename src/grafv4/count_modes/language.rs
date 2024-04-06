@@ -2,14 +2,11 @@ use std::collections::{HashMap};
 use std::iter::Sum;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
+use crate::AppState;
 use crate::grafv4::countable::Countable;
 
 #[derive(Default, Clone)]
 pub(crate) struct LanguageCount(HashMap<String, u32>);
-// pub(crate) struct LanguageCount {
-//     pub(crate) lang_name: String,
-//     pub(crate) amount: u32,
-// }
 
 impl Add for LanguageCount {
     type Output = Self;
@@ -39,13 +36,16 @@ impl Display for LanguageCount {
 }
 
 impl Countable for LanguageCount {
-    fn count(content: Vec<String>, extension: &str) -> Box<Self> {
+    fn count(content: Vec<String>, extension: &str, state: &AppState) -> Result<Self, String> {
+        let lang = state.languages.iter()
+            .find(|x| x.file_extension == extension)
+            .ok_or(format!("LanguageNotFound: .{}", extension))?;
         let mut map: HashMap<String, u32> = HashMap::new();
         map.insert(
-            extension.to_string(), //TODO get lang name
+            lang.name.clone(),
             content.len() as u32,
         );
-        Box::from(LanguageCount { 0: map })
+        Ok(LanguageCount { 0: map })
     }
 
     fn display_summary(self, project_name: String) {
