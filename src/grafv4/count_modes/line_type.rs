@@ -15,6 +15,18 @@ impl Countable for LineTypeCount {
         //TODO
         return Box::from(LineTypeCount::default());
     }
+
+    fn display_summary(self, project_name: String) {
+        println!("Project: {}:", project_name);
+        println!("  Lines of Code:      {}", self.code_count);
+        println!("  Lines of Comments:  {}", self.comment_count);
+        println!("  Lines of New Lines: {}", self.empty_count);
+        println!("Total: {}", self.code_count + self.comment_count + self.empty_count);
+    }
+
+    fn display_legend() {
+        println!("Legend: => (Lines of Code, Lines with Comments, New Lines)");
+    }
 }
 
 impl Add for LineTypeCount {
@@ -37,7 +49,7 @@ impl Sum for LineTypeCount {
 
 impl Display for LineTypeCount {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f,"(LoC: {}, Comment: {}, NewLines: {})", self.code_count, self.comment_count, self.empty_count)
+        write!(f, "({}, {}, {})", self.code_count, self.comment_count, self.empty_count)
     }
 }
 
