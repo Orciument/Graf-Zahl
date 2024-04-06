@@ -1,7 +1,8 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use crate::{AppState, Cli, CountMode};
-use crate::grafv4::countable::Countable;
+use crate::grafv4::count_modes::language::LanguageCount;
+use crate::grafv4::countable::{Countable};
 use crate::grafv4::count_modes::line_type::LineTypeCount;
 use crate::grafv4::count_modes::line::LineCount;
 use crate::grafv4::io_reader::{read_dir, read_file};
@@ -20,37 +21,60 @@ pub fn count_entrypoint(og_path: &PathBuf, state: &AppState, cli: Cli) {
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
     assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
+    // This unwrap is safe, because all "/.." are resolved when we canonicalize the Path
+    let name = path.file_name().unwrap()
+        .to_str().expect("Unable to convert File/Folder Name into Unicode!").to_string();
+
     let enable_summary;
     let enable_per_file;
 
-    let count = match cli.mode {
+    match cli.mode {
         CountMode::Line => {
             enable_summary = cli.summary.to_bool_or(true);
             enable_per_file = cli.per_file.to_bool_or(true);
-            count_path::<LineCount>(path, state).0
+            let count = count_path::<LineCount>(path, state);
+            if enable_summary {
+                count.1.display_summary(name);
+                println!();
+            }
+
+            if enable_per_file {
+                LineCount::display_legend();
+                print_node(count.0, 0, cli.debug, cli.hide_errors);
+            }
         },
         CountMode::LOC => {
             enable_summary = cli.summary.to_bool_or(true);
             enable_per_file = cli.per_file.to_bool_or(true);
-            count_path::<LineTypeCount>(path, state).0
+            let count = count_path::<LineTypeCount>(path, state);
+            if enable_summary {
+                count.1.display_summary(name);
+                println!();
+            }
+
+            if enable_per_file {
+                LineTypeCount::display_legend();
+                print_node(count.0, 0, cli.debug, cli.hide_errors);
+            }
         },
-        _ => {
+        CountMode::Language => {
             enable_summary = cli.summary.to_bool_or(true);
             enable_per_file = cli.per_file.to_bool_or(false);
-            TreeNode::default()
+            let count = count_path::<LanguageCount>(path, state);
+            if enable_summary {
+                count.1.display_summary(name);
+                println!();
+            }
+
+            if enable_per_file {
+                LanguageCount::display_legend();
+                print_node(count.0, 0, cli.debug, cli.hide_errors);
+            }
+        },
+        _ => {
+            //TODO display something, maybe
         },
     };
-
-    if enable_summary {
-        if path.is_dir() {
-            println!("Project: {}", count.string);
-        } else {
-            println!("Project: {}", count.string);
-        }
-    }
-    if enable_per_file {
-        print_node(count, 0, cli.debug, cli.hide_errors);
-    }
 }
 
 fn print_node(node: TreeNode, indent_size: usize, debug: bool, hide_errors: bool) {
@@ -104,7 +128,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String) -> (TreeNode,
     };
     let count = CountMode::count(file, ext);
     return (TreeNode {
-        string: format!("{name} -> {count}"),
+        string: format!("{name} => {count}"),
         ..Default::default()
     }, *count);
 }

@@ -33,9 +33,9 @@ impl FromStr for CountMode {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        println!("CountMode");
         return match s.to_ascii_lowercase().as_str() {
             "line" => Ok(Line),
+            "lines" => Ok(Line),
             "loc" => Ok(LOC),
             "lang" => Ok(Language),
             "language" => Ok(Language),
@@ -68,7 +68,6 @@ impl FromStr for Override {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        println!("Override");
         return match s.to_ascii_lowercase().as_str() {
             "on" => Ok(Override::Enable),
             "enable" => Ok(Override::Enable),
@@ -106,8 +105,6 @@ struct Cli {
     #[structopt(short = "u", default_value = "none")]
     /// Show a Summary of all Counts for all Files
     summary: Override,
-    //TODO add real summary mode, maybe return a accumulator at each step and add them all together.
-    // that way it won't be a tree, but there will be the final count at the end to make the summary
 
     #[structopt(short = "p", default_value = "none", long = "per-file")]
     /// Show the Count for each File individually
