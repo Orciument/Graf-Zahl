@@ -43,4 +43,12 @@ impl Countable for WordCount {
     fn display_legend() {
         println!("Legend: => Amount of Words");
     }
+
+    fn display_description() {
+        println!("Counting Mode: Word Count");
+        println!("--------------------------------------------------");
+        println!("Count all Word within a File!");
+        println!("Something is considered a Word when it is seperated by Unicode whitespace.");
+        println!("Example: \"x = 4 + 5\" would count as 5 Words.");
+    }
 }

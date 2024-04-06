@@ -58,5 +58,18 @@ impl Countable for LanguageCount {
     fn display_legend() {
         println!("Legend: => Lines: Language")
     }
+
+    fn display_description() {
+        println!("Counting Mode: Language Line Count");
+        println!("--------------------------------------------------");
+        println!("Counts the lines of code for every Language and displays a summary of all Languages.");
+        println!();
+        println!("Languages and what Characters start a comment can be configured in the language config file.");
+        println!("The location of the config files can be found by using '-c' or '--config'.");
+        println!("The Syntax for the config is:");
+        println!("\"LANGUAGE_NAME\" \"FILE_EXTENSION\" [\"COMMENT_STRING\" \"COMMENT_STRING\"]");
+        println!("Example: \"Rust\" \"rs\" [\"//\" \"///\"]");
+        println!("You can define as many comment strings as you like");
+    }
 }
 

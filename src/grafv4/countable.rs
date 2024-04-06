@@ -9,4 +9,6 @@ pub(crate) trait Countable: Add + Sum + Display + Default + Clone {
     fn display_summary(self, project_name: String);
 
     fn display_legend();
+
+    fn display_description();
 }
