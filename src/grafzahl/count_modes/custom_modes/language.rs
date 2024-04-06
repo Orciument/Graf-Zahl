@@ -3,7 +3,7 @@ use std::iter::Sum;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use crate::AppState;
-use crate::grafzahl::countable::Countable;
+use crate::grafzahl::count_modes::countable::Countable;
 use crate::grafzahl::languages::get_lang;
 
 #[derive(Default, Clone)]

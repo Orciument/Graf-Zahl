@@ -2,13 +2,13 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::StructOpt;
 use crate::{AppState, Cli};
-use crate::grafzahl::count_mode::CountMode::*;
-use crate::grafzahl::count_mode_lib::char::CharCount;
-use crate::grafzahl::count_mode_lib::language::LanguageCount;
-use crate::grafzahl::count_mode_lib::line::LineCount;
-use crate::grafzahl::count_mode_lib::line_type::LineTypeCount;
-use crate::grafzahl::count_mode_lib::word::WordCount;
-use crate::grafzahl::description_printer::print_description;
+use crate::grafzahl::count_modes::count_mode::CountMode::*;
+use crate::grafzahl::count_modes::custom_modes::char::CharCount;
+use crate::grafzahl::count_modes::custom_modes::language::LanguageCount;
+use crate::grafzahl::count_modes::custom_modes::line::LineCount;
+use crate::grafzahl::count_modes::custom_modes::line_type::LineTypeCount;
+use crate::grafzahl::count_modes::custom_modes::word::WordCount;
+use crate::grafzahl::count_modes::description_printer::print_description;
 use crate::grafzahl::generic_counter::generic_count;
 
 pub fn execute_count_mode(unsafe_path: &PathBuf, state: &AppState, cli: Cli) {
