@@ -40,6 +40,22 @@ impl Countable for LineTypeCount {
     fn display_legend() {
         println!("Legend: => (Lines of Code, Lines with Comments, New Lines)");
     }
+
+    fn display_description() {
+        println!("Counting Mode: Line Type Count");
+        println!("--------------------------------------------------");
+        println!("Classifies the lines into 3 Categories, code, comments, and empty lines!");
+        println!("A line is empty when it is empty after all whitespace has been trimmed away (the line ending character is also ignored).");
+        println!("A line is considered a Comment when it contains a String that starts or stops a Comment in the language associated with the file Extension.");
+        println!("Everything else is considered a line of Code.");
+        println!();
+        println!("Languages and what Characters start a comment can be configured in the language config file.");
+        println!("The location of the config files can be found by using '-c' or '--config'.");
+        println!("The Syntax for the config is:");
+        println!("\"LANGUAGE_NAME\" \"FILE_EXTENSION\" [\"COMMENT_STRING\" \"COMMENT_STRING\"]");
+        println!("Example: \"Rust\" \"rs\" [\"//\" \"///\"]");
+        println!("You can define as many comment strings as you like");
+    }
 }
 
 impl Add for LineTypeCount {

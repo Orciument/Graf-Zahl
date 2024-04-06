@@ -43,4 +43,10 @@ impl Countable for CharCount {
     fn display_legend() {
         println!("Legend: => Amount of Chars")
     }
+
+    fn display_description() {
+        println!("Counting Mode: Character Count");
+        println!("--------------------------------------------------");
+        println!("Count all Characters within a File!");
+    }
 }

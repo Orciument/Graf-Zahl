@@ -13,4 +13,10 @@ impl Countable for LineCount {
     }
 
     fn display_legend() {}
+
+    fn display_description() {
+        println!("Counting Mode: Line Count");
+        println!("--------------------------------------------------");
+        println!("Count all Lines within a File!");
+    }
 }

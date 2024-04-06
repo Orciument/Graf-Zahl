@@ -10,7 +10,7 @@ use structopt::StructOpt;
 
 use crate::grafzahl::ignore_checker::{init_empty_list, init_ignore_list};
 use crate::grafzahl::languages::{import_languages, Language};
-use crate::grafv4::count_mode::{CountMode, execute_count_mode};
+use crate::grafv4::count_mode::{CountMode, execute_count_mode, explain_count_mode};
 
 mod grafzahl;
 mod grafv4;
@@ -75,6 +75,10 @@ struct Cli {
     /// Show location of current config files
     show_config: bool,
 
+    #[structopt(short = "e", long="explain")]
+    /// Show location of current config files
+    explain_mode: bool,
+
     #[structopt(short = "u", default_value = "none")]
     /// Show a Summary of all Counts for all Files
     summary: Override,
@@ -100,6 +104,11 @@ fn main() -> CliResult {
     if cli.show_config {
         println!("The Config is located at: ");
         println!("{}", get_config_location());
+        return Ok(());
+    }
+
+    if cli.explain_mode {
+        explain_count_mode(cli);
         return Ok(());
     }
 
