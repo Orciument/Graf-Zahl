@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::env;
 use std::path::PathBuf;
+use std::process::exit;
 use std::str::FromStr;
 
 use ignore::gitignore::Gitignore;
@@ -101,6 +102,17 @@ fn main() -> CliResult {
         println!("{}", get_config_location());
         return Ok(());
     }
+
+    let unsafe_path = &PathBuf::from(&cli.directory);
+    let safe_path = match unsafe_path.canonicalize() {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("Absolut Path could not be found for Path: {}", unsafe_path.display());
+            eprintln!("{e}");
+            exit(74);
+        }
+    };
+
     let ignore = if cli.disable_ignore_list {
         init_empty_list()
     } else {
@@ -112,7 +124,7 @@ fn main() -> CliResult {
         missing_lang: HashSet::new(),
     };
 
-    execute_count_mode(&PathBuf::from(&cli.directory), &mut state, cli);
+    execute_count_mode(&safe_path, &mut state, cli);
     //TODO Display missing Langs
     //TODO Add command line option to hide missing Langs
     Ok(())
