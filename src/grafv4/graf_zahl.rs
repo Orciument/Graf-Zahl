@@ -21,60 +21,34 @@ pub fn count_entrypoint(og_path: &PathBuf, state: &AppState, cli: Cli) {
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
     assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
+
+    match cli.mode {
+        CountMode::Line => do_count::<LineCount>(state, &cli, path, true, true),
+        CountMode::LOC => do_count::<LineTypeCount>(state, &cli, path, true, true),
+        CountMode::Language => do_count::<LanguageCount>(state, &cli, path, true, false),
+        _ => {
+            //TODO display something, maybe
+        }
+    };
+}
+
+fn do_count<CountMode: Countable>(state: &AppState, cli: &Cli, path: &PathBuf, default_summary: bool, default_per_file: bool) {
     // This unwrap is safe, because all "/.." are resolved when we canonicalize the Path
     let name = path.file_name().unwrap()
         .to_str().expect("Unable to convert File/Folder Name into Unicode!").to_string();
 
-    let enable_summary;
-    let enable_per_file;
+    let enable_summary = cli.summary.to_bool_or(default_summary);
+    let enable_per_file = cli.per_file.to_bool_or(default_per_file);
+    let count = count_path::<CountMode>(path, state);
+    if enable_summary {
+        count.1.display_summary(name);
+        println!();
+    }
 
-    match cli.mode {
-        CountMode::Line => {
-            enable_summary = cli.summary.to_bool_or(true);
-            enable_per_file = cli.per_file.to_bool_or(true);
-            let count = count_path::<LineCount>(path, state);
-            if enable_summary {
-                count.1.display_summary(name);
-                println!();
-            }
-
-            if enable_per_file {
-                LineCount::display_legend();
-                print_node(count.0, 0, cli.debug, cli.hide_errors);
-            }
-        },
-        CountMode::LOC => {
-            enable_summary = cli.summary.to_bool_or(true);
-            enable_per_file = cli.per_file.to_bool_or(true);
-            let count = count_path::<LineTypeCount>(path, state);
-            if enable_summary {
-                count.1.display_summary(name);
-                println!();
-            }
-
-            if enable_per_file {
-                LineTypeCount::display_legend();
-                print_node(count.0, 0, cli.debug, cli.hide_errors);
-            }
-        },
-        CountMode::Language => {
-            enable_summary = cli.summary.to_bool_or(true);
-            enable_per_file = cli.per_file.to_bool_or(false);
-            let count = count_path::<LanguageCount>(path, state);
-            if enable_summary {
-                count.1.display_summary(name);
-                println!();
-            }
-
-            if enable_per_file {
-                LanguageCount::display_legend();
-                print_node(count.0, 0, cli.debug, cli.hide_errors);
-            }
-        },
-        _ => {
-            //TODO display something, maybe
-        },
-    };
+    if enable_per_file {
+        LineCount::display_legend();
+        print_node(count.0, 0, cli.debug, cli.hide_errors);
+    }
 }
 
 fn print_node(node: TreeNode, indent_size: usize, debug: bool, hide_errors: bool) {
