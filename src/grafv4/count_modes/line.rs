@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use crate::AppState;
 use crate::grafv4::countable::Countable;
 
