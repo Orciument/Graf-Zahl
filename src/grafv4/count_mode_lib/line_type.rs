@@ -56,7 +56,7 @@ impl Add for LineTypeCount {
 
 impl Sum for LineTypeCount {
     fn sum<I: Iterator<Item=Self>>(iter: I) -> Self {
-        iter.fold(LineTypeCount::default(), |acc, num| acc + num)
+        iter.fold(Self::default(), |acc, num| acc + num)
     }
 }
 

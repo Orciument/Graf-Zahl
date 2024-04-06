@@ -23,7 +23,7 @@ impl Add for LanguageCount {
 
 impl Sum for LanguageCount {
     fn sum<I: Iterator<Item=Self>>(iter: I) -> Self {
-        iter.fold(LanguageCount::default(), |acc, num| acc + num)
+        iter.fold(Self::default(), |acc, num| acc + num)
     }
 }
 
