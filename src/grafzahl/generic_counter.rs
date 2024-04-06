@@ -1,8 +1,8 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
 use crate::{AppState, Cli};
-use crate::grafv4::countable::Countable;
-use crate::grafv4::io_reader::{read_dir, read_file};
+use crate::grafzahl::countable::Countable;
+use crate::grafzahl::io_reader::{read_dir, read_file};
 
 #[derive(Default, Clone)]
 pub(crate) struct TreeNode {

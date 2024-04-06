@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use crate::grafv4::io_reader::ReadFileError::{EncodingNotSupported, IoError};
+use crate::grafzahl::io_reader::ReadFileError::{EncodingNotSupported, IoError};
 
 pub(crate) enum ReadFileError {
     IoError(io::Error),

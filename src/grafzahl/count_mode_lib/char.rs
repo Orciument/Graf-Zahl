@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::iter::Sum;
 use std::ops::Add;
 use crate::AppState;
-use crate::grafv4::countable::Countable;
+use crate::grafzahl::countable::Countable;
 
 #[derive(Default, Clone)]
 pub(crate) struct CharCount(u32);
