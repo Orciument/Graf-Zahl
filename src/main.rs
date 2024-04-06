@@ -10,10 +10,9 @@ use structopt::StructOpt;
 
 use crate::grafzahl::ignore_checker::{init_empty_list, init_ignore_list};
 use crate::grafzahl::languages::{import_languages, Language};
-use crate::grafv4::count_mode::{CountMode, execute_count_mode, explain_count_mode};
+use crate::grafzahl::count_mode::{CountMode, execute_count_mode, explain_count_mode};
 
 mod grafzahl;
-mod grafv4;
 
 pub fn get_config_location() -> String {
     const CONFIG_LOCATION: &str = "%LOCALAPPDATA%/graf-zahl";

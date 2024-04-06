@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::grafv4::countable::Countable;
+use crate::grafzahl::countable::Countable;
 
 pub(crate) type LineCount = u32;
 
