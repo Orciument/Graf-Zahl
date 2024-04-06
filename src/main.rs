@@ -55,7 +55,7 @@ pub(crate) enum Override {
 }
 
 impl Override {
-    pub(crate) fn to_bool_or(self, default: bool) -> bool {
+    pub(crate) fn to_bool_or(&self, default: bool) -> bool {
         return match self {
             Override::Enable => true,
             Override::Disable => false,
