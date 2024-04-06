@@ -1,17 +1,15 @@
 use std::collections::HashSet;
 use std::env;
-use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use ignore::gitignore::{Gitignore};
+use ignore::gitignore::Gitignore;
 use quicli::prelude::CliResult;
 use structopt::StructOpt;
-use crate::CountMode::{*};
 
 use crate::grafzahl::ignore_checker::{init_empty_list, init_ignore_list};
 use crate::grafzahl::languages::{import_languages, Language};
-use crate::grafv4::graf_zahl::count_entrypoint;
+use crate::grafv4::count_mode_selector::{CountMode, execute_count_mode};
 
 mod grafzahl;
 mod grafv4;
@@ -20,32 +18,6 @@ pub fn get_config_location() -> String {
     const CONFIG_LOCATION: &str = "%LOCALAPPDATA%/graf-zahl";
     CONFIG_LOCATION.replace("%LOCALAPPDATA%", &env::var("LOCALAPPDATA").expect("Can't find Value for Env. %LOCALAPPDATA%"))
 }
-
-#[derive(StructOpt, Debug)]
-pub enum CountMode {
-    Line,
-    LOC,
-    Language,
-    LanguageLOC,
-}
-
-impl FromStr for CountMode {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        return match s.to_ascii_lowercase().as_str() {
-            "line" => Ok(Line),
-            "lines" => Ok(Line),
-            "loc" => Ok(LOC),
-            "lang" => Ok(Language),
-            "language" => Ok(Language),
-            "languageloc" => Ok(LanguageLOC),
-            "langloc" => Ok(LanguageLOC),
-            _ => Err(String::from("NotAnOption: LINE, LOC, LANGUAGE, LANGUAGELOC"))
-        };
-    }
-}
-
 
 #[derive(StructOpt, Debug)]
 pub(crate) enum Override {
@@ -140,7 +112,7 @@ fn main() -> CliResult {
         missing_lang: HashSet::new(),
     };
 
-    count_entrypoint(&PathBuf::from(&cli.directory), &mut state, cli);
+    execute_count_mode(&PathBuf::from(&cli.directory), &mut state, cli);
     //TODO Display missing Langs
     //TODO Add command line option to hide missing Langs
     Ok(())
