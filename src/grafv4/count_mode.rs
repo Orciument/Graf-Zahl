@@ -9,7 +9,7 @@ use crate::grafv4::count_mode_lib::line::LineCount;
 use crate::grafv4::count_mode_lib::line_type::LineTypeCount;
 use crate::grafv4::count_mode_lib::word::WordCount;
 use crate::grafv4::description_printer::print_description;
-use crate::grafv4::graf_zahl::generic_count;
+use crate::grafv4::generic_counter::generic_count;
 
 pub fn execute_count_mode(unsafe_path: &PathBuf, state: &AppState, cli: Cli) {
     match cli.mode {

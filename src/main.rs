@@ -137,4 +137,11 @@ fn main() -> CliResult {
     //TODO Display missing Langs
     //TODO Add command line option to hide missing Langs
     Ok(())
+
+    //TODO add info what kind of language the lang is, and give options to hide some of them?
+    // General,
+    // Config,
+    // Text,
+    // Template,
+    // DSL, //Domain Specific Language (SQL, JDSL)
 }
