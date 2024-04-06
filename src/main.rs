@@ -9,7 +9,7 @@ use quicli::prelude::CliResult;
 use structopt::StructOpt;
 
 use crate::grafzahl::ignore_checker::{init_empty_list, init_ignore_list};
-use crate::grafzahl::languages::{import_languages, Language};
+use crate::grafzahl::language::languages::{import_languages, Language};
 use crate::grafzahl::count_modes::count_mode::{CountMode, execute_count_mode, explain_count_mode};
 
 mod grafzahl;
