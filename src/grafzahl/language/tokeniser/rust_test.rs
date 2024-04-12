@@ -24,80 +24,45 @@ impl Annotator for Rust {
                 // if line has multiline comment
                 let multi_line_symbols = vec![
                     Symbol { kind: SymbolKind::START, symbol: "/*".to_string() },
-                    Symbol { kind: SymbolKind::END, symbol: "*/".to_string()}
+                    Symbol { kind: SymbolKind::END, symbol: "*/".to_string() },
                 ];
-                let mut prefix_len: usize = 0;
-                let mut last_len: usize = 0;
-                let mut prefix: &str;
+                let mut prefix: &str = "";
                 loop {
-                    match get_next_symbol(&remaining[prefix_len..], &multi_line_symbols) {
-                        Token::MultiStart(index, len ) => {
-                            let sub = remaining.split_at(index + prefix_len);
-                            println!("Start: {}|{}|{}", sub.0.split_at(prefix_len).0, sub.0.split_at(prefix_len).1, sub.1);
+                    match get_next_symbol(&remaining, &multi_line_symbols) {
+                        Token::MultiStart(index, len) => {
+                            let sub = remaining.split_at(index);
+                            println!("Start: {}|{}|{}", prefix, sub.0, sub.1);
                             if multi_comment_depth <= 0 {
-                                vec.push(Annotation::Code(String::from(sub.0)));
+                                vec.push(Annotation::Code(String::from(prefix.to_owned() + sub.0)));
                             } else {
-                                vec.push(Annotation::Comment(String::from(sub.0)));
+                                vec.push(Annotation::Comment(String::from(prefix.to_owned() + sub.0)));
                             }
-                            remaining = sub.1;
-                            prefix_len += len;
-                            last_len = len;
+                            prefix = &sub.1[..len];
+                            remaining = &sub.1[len..];
                             multi_comment_depth += 1;
                         }
                         Token::MultiEnd(index, len) => {
-                            let sub = remaining.split_at(index + prefix_len + 2);
-                            println!("END: {}|{}|{}", sub.0.split_at(prefix_len).0, sub.0.split_at(prefix_len).1, sub.1);
+                            let sub = remaining.split_at(index + len);
+                            println!("END: {}|{}|{}", prefix, sub.0, sub.1);
                             if multi_comment_depth <= 0 {
-                                vec.push(Annotation::Code(String::from(sub.0)));
+                                vec.push(Annotation::Code(String::from(prefix.to_owned() + sub.0)));
                             } else {
-                                vec.push(Annotation::Comment(String::from(sub.0)));
+                                vec.push(Annotation::Comment(String::from(prefix.to_owned() + sub.0)));
                             }
+                            prefix = "";
                             remaining = sub.1;
-                            prefix_len -= last_len; //TODO i guess correct would be -matched char length
-                            last_len = 0;
                             multi_comment_depth -= 1;
                         }
                         Token::LineEnd => {
                             println!("linend: d: {}", multi_comment_depth);
                             if multi_comment_depth <= 0 {
-                                vec.push(Annotation::Code(String::from(remaining)));
+                                vec.push(Annotation::Code(String::from(prefix.to_owned() + remaining)));
                             } else {
-                                vec.push(Annotation::Comment(String::from(remaining)));
+                                vec.push(Annotation::Comment(String::from(prefix.to_owned() + remaining)));
                             }
                             break;
                         }
                     }
-                    // if symbol.kind.eq("/*") {
-                    //     let sub = remaining.split_at(symbol.index + prefix_len);
-                    //     println!("Start: {}|{}|{}", sub.0.split_at(prefix_len).0, sub.0.split_at(prefix_len).1, sub.1);
-                    //     if multi_comment_depth <= 0 {
-                    //         vec.push(Annotation::Code(String::from(sub.0)));
-                    //     } else {
-                    //         vec.push(Annotation::Comment(String::from(sub.0)));
-                    //     }
-                    //     remaining = sub.1;
-                    //     prefix_len += 2; //TODO matched char length
-                    //     multi_comment_depth += 1;
-                    // } else if symbol.kind.eq("*/") {
-                    //     let sub = remaining.split_at(symbol.index + prefix_len + 2);
-                    //     println!("END: {}|{}|{}", sub.0.split_at(prefix_len).0, sub.0.split_at(prefix_len).1, sub.1);
-                    //     if multi_comment_depth <= 0 {
-                    //         vec.push(Annotation::Code(String::from(sub.0)));
-                    //     } else {
-                    //         vec.push(Annotation::Comment(String::from(sub.0)));
-                    //     }
-                    //     remaining = sub.1;
-                    //     prefix_len = 0; //TODO i guess correct would be -matched char length
-                    //     multi_comment_depth -= 1;
-                    // } else if symbol.kind.eq("LineEnd") {
-                    //     println!("linend: d: {}", multi_comment_depth);
-                    //     if multi_comment_depth <= 0 {
-                    //         vec.push(Annotation::Code(String::from(remaining)));
-                    //     } else {
-                    //         vec.push(Annotation::Comment(String::from(remaining)));
-                    //     }
-                    //     break;
-                    // }
                 }
             }
         }
@@ -107,7 +72,7 @@ impl Annotator for Rust {
 
 struct Symbol {
     kind: SymbolKind,
-    symbol: String
+    symbol: String,
 }
 
 #[derive(Clone)]
@@ -171,7 +136,7 @@ fn get_next_symbol(line: &str, symbols: &Vec<Symbol>) -> Token {
     return match pos.kind {
         SymbolKind::START => Token::MultiStart(pos.index, pos.symbol.len()),
         SymbolKind::END => Token::MultiEnd(pos.index, pos.symbol.len())
-    }
+    };
 }
 
 fn find_symbol(line: &str, symbol: &Symbol) -> Option<TokenPos> {
