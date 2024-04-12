@@ -20,48 +20,45 @@ impl Annotator for Rust {
                 } else {
                     vec.push(Annotation::Comment(line));
                 }
-            } else {
-                // if line has multiline comment
-                let multi_line_symbols = vec![
-                    Symbol { kind: SymbolKind::START, symbol: "/*".to_string() },
-                    Symbol { kind: SymbolKind::END, symbol: "*/".to_string() },
-                ];
-                let mut prefix: &str = "";
-                loop {
-                    match get_next_symbol(&remaining, &multi_line_symbols) {
-                        Token::MultiStart(index, len) => {
-                            let sub = remaining.split_at(index);
-                            println!("Start: {}|{}|{}", prefix, sub.0, sub.1);
-                            if multi_comment_depth <= 0 {
-                                vec.push(Annotation::Code(String::from(prefix.to_owned() + sub.0)));
-                            } else {
-                                vec.push(Annotation::Comment(String::from(prefix.to_owned() + sub.0)));
-                            }
-                            prefix = &sub.1[..len];
-                            remaining = &sub.1[len..];
-                            multi_comment_depth += 1;
+                continue;
+            }
+            // if line has multiline comment
+            let multi_line_symbols = vec![
+                Symbol { kind: SymbolKind::START, symbol: "/*".to_string() },
+                Symbol { kind: SymbolKind::END, symbol: "*/".to_string() },
+            ];
+            let mut prefix: &str = "";
+            loop {
+                match get_next_symbol(&remaining, &multi_line_symbols) {
+                    Token::MultiStart(index, len) => {
+                        let sub = remaining.split_at(index);
+                        if multi_comment_depth <= 0 {
+                            vec.push(Annotation::Code(String::from(prefix.to_owned() + sub.0)));
+                        } else {
+                            vec.push(Annotation::Comment(String::from(prefix.to_owned() + sub.0)));
                         }
-                        Token::MultiEnd(index, len) => {
-                            let sub = remaining.split_at(index + len);
-                            println!("END: {}|{}|{}", prefix, sub.0, sub.1);
-                            if multi_comment_depth <= 0 {
-                                vec.push(Annotation::Code(String::from(prefix.to_owned() + sub.0)));
-                            } else {
-                                vec.push(Annotation::Comment(String::from(prefix.to_owned() + sub.0)));
-                            }
-                            prefix = "";
-                            remaining = sub.1;
-                            multi_comment_depth -= 1;
+                        prefix = &sub.1[..len];
+                        remaining = &sub.1[len..];
+                        multi_comment_depth += 1;
+                    }
+                    Token::MultiEnd(index, len) => {
+                        let sub = remaining.split_at(index + len);
+                        if multi_comment_depth <= 0 {
+                            vec.push(Annotation::Code(String::from(prefix.to_owned() + sub.0)));
+                        } else {
+                            vec.push(Annotation::Comment(String::from(prefix.to_owned() + sub.0)));
                         }
-                        Token::LineEnd => {
-                            println!("linend: d: {}", multi_comment_depth);
-                            if multi_comment_depth <= 0 {
-                                vec.push(Annotation::Code(String::from(prefix.to_owned() + remaining)));
-                            } else {
-                                vec.push(Annotation::Comment(String::from(prefix.to_owned() + remaining)));
-                            }
-                            break;
+                        prefix = "";
+                        remaining = sub.1;
+                        multi_comment_depth -= 1;
+                    }
+                    Token::LineEnd => {
+                        if multi_comment_depth <= 0 {
+                            vec.push(Annotation::Code(String::from(prefix.to_owned() + remaining)));
+                        } else {
+                            vec.push(Annotation::Comment(String::from(prefix.to_owned() + remaining)));
                         }
+                        break;
                     }
                 }
             }
