@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use crate::grafzahl::language::annotator::{Annotation, Annotator};
+use crate::grafzahl::language::annotator::{Annotation, Annotator, collapse};
 
 pub struct Rust;
 
@@ -25,14 +25,15 @@ impl Annotator for Rust {
                 BlockSymbols { start: true, symbol: "/*".to_string() },
                 BlockSymbols { start: false, symbol: "*/".to_string() },
             ];
-            parse_multi_comments(&mut vec, multi_comment_depth, line.as_str(), &multi_line_symbols);
+            multi_comment_depth = parse_multi_comments(&mut vec, multi_comment_depth, line.as_str(), &multi_line_symbols);
         }
-        vec
+        collapse(vec)
+        // vec
     }
 }
 
 /// consumes all Block Comment Symbols until the next linebreak, ignores line comments
-fn parse_multi_comments(vec: &mut Vec<Annotation>, mut multi_comment_depth: i32, line: &str, multi_line_symbols: &Vec<BlockSymbols>) {
+fn parse_multi_comments(vec: &mut Vec<Annotation>, mut multi_comment_depth: i32, line: &str, multi_line_symbols: &Vec<BlockSymbols>) -> i32 {
     let mut remaining: &str = line;
     let mut prefix: &str = "";
     loop {
@@ -53,13 +54,15 @@ fn parse_multi_comments(vec: &mut Vec<Annotation>, mut multi_comment_depth: i32,
             }
             Token::LineEnd => {
                 push_string(vec, multi_comment_depth, prefix, remaining);
+                vec.push(Annotation::LineBreak);
                 break;
             }
         }
     }
+    multi_comment_depth
 }
 
-fn push_string(mut vec: &mut Vec<Annotation>, multi_comment_depth: i32, prefix: &str, remaining: &str) {
+fn push_string(vec: &mut Vec<Annotation>, multi_comment_depth: i32, prefix: &str, remaining: &str) {
     if multi_comment_depth <= 0 {
         vec.push(Annotation::Code(String::from(prefix.to_owned() + remaining)));
     } else {
