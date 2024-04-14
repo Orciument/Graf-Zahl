@@ -48,6 +48,6 @@ pub fn parse_line(line: &String) -> Result<Language, String> {
 fn parse_array(raw: &str) -> Vec<String> {
     raw.split(",")
         .map(|x| x.trim())
-        .map(|x1| x1[1..x1.len() - 1].to_string())
+        .map(|x1| x1[1..x1.len() - 1].replace("\\\"", "\""))
         .collect()
 }
