@@ -6,7 +6,7 @@ use crate::AppState;
 use crate::grafzahl::count_modes::countable::Countable;
 use crate::grafzahl::language::languages::get_lang;
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub(crate) struct LanguageCount(HashMap<String, u32>);
 
 impl Add for LanguageCount {
@@ -30,9 +30,13 @@ impl Sum for LanguageCount {
 impl Display for LanguageCount {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.0.len() > 1 { return write!(f, ""); }
-        let lang_name = self.0.keys().next().unwrap();
-        let amount = self.0.values().next().unwrap();
-        write!(f, "{}: {}", amount, lang_name)
+        let lang_name = self.0.keys().next();
+        let amount = self.0.values().next();
+        if lang_name.is_some() || amount.is_some() {
+            write!(f, "{}: {}", amount.unwrap(), lang_name.unwrap())
+        } else {
+            write!(f, "0")
+        }
     }
 }
 
