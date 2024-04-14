@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use colored::Colorize;
 use crate::{AppState, Cli};
 use crate::grafzahl::count_modes::countable::Countable;
 use crate::grafzahl::io_reader::{read_dir, read_file};
@@ -79,7 +80,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String, state: &AppSt
         Ok(v) => v,
         Err(e) => {
             return (TreeNode {
-                string: format!("{name} => [ERR] {e}"),
+                string: format!("{name} => [ERR] {e}").bright_red().to_string(),
                 errored: true,
                 ..Default::default()
             }, CountMode::default());
@@ -94,7 +95,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String, state: &AppSt
             }, v),
         Err(e) =>
             (TreeNode {
-                string: format!("{name} => [ERR] {e}"),
+                string: format!("{name} => [ERR] {e}").bright_red().to_string(),
                 errored: true,
                 ..Default::default()
             }, CountMode::default())
@@ -106,7 +107,7 @@ fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &S
         Ok(v) => v.iter().map(|p| count_dir(p, state)).collect(),
         Err(e) => {
             return (TreeNode {
-                string: format!("{name}/ => [ERR] {e}"),
+                string: format!("{name}/ => [ERR] {e}").bright_red().to_string(),
                 errored: true,
                 ..Default::default()
             }, CountMode::default());

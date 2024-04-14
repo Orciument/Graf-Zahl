@@ -3,6 +3,7 @@ use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
+use colored::Colorize;
 
 use ignore::gitignore::Gitignore;
 use quicli::prelude::CliResult;
@@ -47,7 +48,7 @@ impl FromStr for Override {
             "disable" => Ok(Override::Disable),
             "none" => Ok(Override::None),
             "default" => Ok(Override::None),
-            _ => Err(String::from("NotAnOption: ON, OFF"))
+            _ => Err(format!("{}", "NotAnOption: ON, OFF".red()))
         };
     }
 }
@@ -75,7 +76,7 @@ struct Cli {
     show_config: bool,
 
     #[structopt(short = "e", long = "explain")]
-    /// Show location of current config files
+    /// Explain selected count mode
     explain_mode: bool,
 
     #[structopt(short = "u", default_value = "none")]

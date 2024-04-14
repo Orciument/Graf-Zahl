@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::str::FromStr;
+use colored::Colorize;
 use structopt::StructOpt;
 use crate::{AppState, Cli};
 use crate::grafzahl::count_modes::count_mode::CountMode::*;
@@ -59,7 +60,7 @@ impl FromStr for CountMode {
             "language" => Ok(Language),
             "languageloc" => Ok(LanguageLOC),
             "langloc" => Ok(LanguageLOC),
-            _ => Err(String::from("NotAnOption: LINE, WORD, CHAR, LOC, LANGUAGE, LANGUAGELOC"))
+            _ => Err(format!("{}", "NotAnOption: LINE, WORD, CHAR, LOC, LANGUAGE, LANGUAGELOC".red()))
         };
     }
 }
