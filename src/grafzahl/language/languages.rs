@@ -8,7 +8,7 @@ use crate::{AppState, get_config_location};
 #[derive(Debug, Clone)]
 pub struct Language {
     pub name: String,
-    pub comment_symbol: String,
+    pub comment_symbol: Vec<String>,
     pub file_extension: String,
 }
 
@@ -35,7 +35,7 @@ impl FromStr for Language {
 
         Ok(Language {
             name,
-            comment_symbol: vec.first().unwrap().clone(),
+            comment_symbol: vec,
             file_extension: ext,
         })
     }
