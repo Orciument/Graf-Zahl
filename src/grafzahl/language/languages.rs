@@ -9,8 +9,10 @@ use crate::{AppState, get_config_location};
 #[derive(Debug, Clone)]
 pub struct Language {
     pub name: String,
-    pub comment_symbol: Vec<String>,
     pub file_extension: String,
+    pub inline_symbols: Vec<String>,
+    pub block_start_symbols: Vec<String>,
+    pub block_end_symbols: Vec<String>,
 }
 
 impl Display for Language {
@@ -36,8 +38,10 @@ impl FromStr for Language {
 
         Ok(Language {
             name,
-            comment_symbol: vec,
             file_extension: ext,
+            inline_symbols: vec,
+            block_start_symbols: vec![],
+            block_end_symbols: vec![],
         })
     }
 }

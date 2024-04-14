@@ -19,7 +19,7 @@ impl Countable for LineTypeCount {
         let lang = get_lang(extension, state)?;
 
         let mut line_data: LineTypeCount = Default::default();
-        let annotated = annotate(content, &lang.comment_symbol, &vec![], &vec![]);
+        let annotated = annotate(content, &lang.inline_symbols, &lang.block_start_symbols, &lang.block_end_symbols);
         for l in annotated {
             if l.is_comment() {
                 line_data.comment_count += 1;
