@@ -1,6 +1,7 @@
 use std::iter::Sum;
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
+use colored::Colorize;
 use crate::AppState;
 use crate::grafzahl::count_modes::countable::Countable;
 use crate::grafzahl::language::annotator::annotate;
@@ -36,11 +37,15 @@ impl Countable for LineTypeCount {
         println!("  Lines of Code:      {}", self.code_count);
         println!("  Lines of Comments:  {}", self.comment_count);
         println!("  Lines of New Lines: {}", self.empty_count);
-        println!("Total: {}", self.code_count + self.comment_count + self.empty_count);
+        println!("Total: {}", (self.code_count + self.comment_count + self.empty_count).to_string().underline());
     }
 
     fn display_legend() {
-        println!("Legend: => (Lines of Code, Lines with Comments, New Lines)");
+        println!("Legend: => ({}, {}, {})",
+                 "Lines of Code".blue(),
+                 "Lines with Comments".green(),
+                 "New Lines".white()
+        );
     }
 
     fn display_description() {
@@ -80,7 +85,11 @@ impl Sum for LineTypeCount {
 
 impl Display for LineTypeCount {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {}, {})", self.code_count, self.comment_count, self.empty_count)
+        write!(f, "({}, {}, {})",
+               self.code_count.to_string().blue(),
+               self.comment_count.to_string().green(),
+               self.empty_count.to_string().white()
+        )
     }
 }
 

@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+use colored::Colorize;
 use crate::grafzahl::io_reader::ReadFileError::{EncodingNotSupported, IoError};
 
 pub(crate) enum ReadFileError {
@@ -13,8 +14,8 @@ pub(crate) enum ReadFileError {
 impl Display for ReadFileError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            IoError(e) => write!(f, "IoError: {e}"),
-            EncodingNotSupported => write!(f, "EncodingNotSupported: Non Unicode"),
+            IoError(e) => write!(f, "{} {}", "IoError: ".red(), e.to_string().red()),
+            EncodingNotSupported => write!(f, "{}", "EncodingNotSupported: Non Unicode".red()),
         }
     }
 }

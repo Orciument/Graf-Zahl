@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::str::FromStr;
+use colored::Colorize;
 use crate::{AppState, get_config_location};
 
 #[derive(Debug, Clone)]
@@ -75,8 +76,9 @@ pub fn import_languages() -> Vec<Language> {
         let lang = match Language::from_str(&l) {
             Ok(x) => x,
             Err(_) => {
-                eprintln!("Error parsing line: ");
-                eprintln!("{l}");
+                eprintln!("{}", "Error parsing line:".red().underline());
+                eprintln!("{}", l.red());
+                eprintln!(" ");
                 continue;
             }
         };
