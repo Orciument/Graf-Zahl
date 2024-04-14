@@ -74,7 +74,7 @@ struct Cli {
     /// Show location of current config files
     show_config: bool,
 
-    #[structopt(short = "e", long="explain")]
+    #[structopt(short = "e", long = "explain")]
     /// Show location of current config files
     explain_mode: bool,
 

@@ -3,6 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use crate::AppState;
 use crate::grafzahl::count_modes::countable::Countable;
+use crate::grafzahl::language::general_annotator::annotate;
 use crate::grafzahl::language::languages::{get_lang};
 
 #[derive(Default, Copy, Clone)]
@@ -17,10 +18,11 @@ impl Countable for LineTypeCount {
         let lang = get_lang(extension, state)?;
 
         let mut line_data: LineTypeCount = Default::default();
-        for l in content {
-            if l.contains(&lang.comment_symbol) {
+        let annotated = annotate(content, &lang.comment_symbol, &vec![], &vec![]);
+        for l in annotated {
+            if l.is_comment() {
                 line_data.comment_count += 1;
-            } else if l.trim().is_empty() {
+            } else if l.line.trim().is_empty() {
                 line_data.empty_count += 1;
             } else {
                 line_data.code_count += 1;
