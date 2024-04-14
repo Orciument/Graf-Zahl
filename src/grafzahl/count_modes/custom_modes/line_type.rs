@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use std::ops::Add;
 use crate::AppState;
 use crate::grafzahl::count_modes::countable::Countable;
-use crate::grafzahl::language::general_annotator::annotate;
+use crate::grafzahl::language::annotator::annotate;
 use crate::grafzahl::language::languages::{get_lang};
 
 #[derive(Default, Copy, Clone)]
