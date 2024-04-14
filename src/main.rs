@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use std::env;
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
@@ -8,19 +7,13 @@ use colored::Colorize;
 use ignore::gitignore::Gitignore;
 use quicli::prelude::CliResult;
 use structopt::StructOpt;
+use grafzahl::config;
 
 use crate::grafzahl::ignore_checker::{init_empty_list, init_ignore_list};
 use crate::grafzahl::language::languages::{import_languages, Language};
 use crate::grafzahl::count_modes::count_mode::{CountMode, execute_count_mode, explain_count_mode};
 
 mod grafzahl;
-
-pub fn get_config_location() -> String {
-    const CONFIG_LOCATION: &str = "%LOCALAPPDATA%/graf-zahl";
-    CONFIG_LOCATION.replace("%LOCALAPPDATA%", &env::var("LOCALAPPDATA").expect("Can't find Value for Env. %LOCALAPPDATA%"))
-    //TODO override env
-    //TODO linux support
-}
 
 #[derive(StructOpt, Debug)]
 pub(crate) enum Override {
@@ -105,7 +98,7 @@ fn main() -> CliResult {
     let cli = Cli::from_args();
     if cli.show_config {
         println!("The Config is currently located at: ");
-        println!("{}", get_config_location());
+        println!("{}", config::get_config_path_base().display());
         return Ok(());
     } else if cli.explain_mode {
         explain_count_mode(cli);
@@ -127,15 +120,9 @@ fn main() -> CliResult {
     } else {
         init_ignore_list()
     };
-    let languages = match import_languages() {
-        Ok(v) => v,
-        Err(e) => {
-            eprintln!("{}", e);
-            exit(2)
-        }
-    };
+
     let mut state = AppState {
-        languages,
+        languages: import_languages(),
         ignore,
         missing_lang: HashSet::new(),
     };
