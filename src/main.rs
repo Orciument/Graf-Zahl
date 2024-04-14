@@ -18,6 +18,8 @@ mod grafzahl;
 pub fn get_config_location() -> String {
     const CONFIG_LOCATION: &str = "%LOCALAPPDATA%/graf-zahl";
     CONFIG_LOCATION.replace("%LOCALAPPDATA%", &env::var("LOCALAPPDATA").expect("Can't find Value for Env. %LOCALAPPDATA%"))
+    //TODO override env
+    //TODO linux support
 }
 
 #[derive(StructOpt, Debug)]
@@ -102,12 +104,10 @@ pub struct AppState {
 fn main() -> CliResult {
     let cli = Cli::from_args();
     if cli.show_config {
-        println!("The Config is located at: ");
+        println!("The Config is currently located at: ");
         println!("{}", get_config_location());
         return Ok(());
-    }
-
-    if cli.explain_mode {
+    } else if cli.explain_mode {
         explain_count_mode(cli);
         return Ok(());
     }
@@ -127,8 +127,15 @@ fn main() -> CliResult {
     } else {
         init_ignore_list()
     };
+    let languages = match import_languages() {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("{}", e);
+            exit(2)
+        }
+    };
     let mut state = AppState {
-        languages: import_languages(),
+        languages,
         ignore,
         missing_lang: HashSet::new(),
     };
@@ -137,11 +144,4 @@ fn main() -> CliResult {
     //TODO Display missing Langs
     //TODO Add command line option to hide missing Langs
     Ok(())
-
-    //TODO add info what kind of language the lang is, and give options to hide some of them?
-    // General,
-    // Config,
-    // Text,
-    // Template,
-    // DSL, //Domain Specific Language (SQL, JDSL)
 }

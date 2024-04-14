@@ -2,14 +2,17 @@ use colored::Colorize;
 use regex::Regex;
 use crate::grafzahl::language::languages::Language;
 
-fn parse_langs(content: Vec<String>) -> Vec<Language> {
+pub fn parse_langs(content: Vec<String>) -> Vec<Language> {
     let mut vec = vec![];
     for line in content {
+        if line.trim().is_empty() {
+            continue;
+        }
         match parse_line(&line) {
             Ok(v) => vec.push(v),
-            Err(v) => {
-                eprintln!("{}", "Error parsing line:".red().underline());
-                eprintln!("{}", v.red());
+            Err(_) => {
+                eprintln!("{}", "Couldn't parse line Language Definition is malformed!".red().underline());
+                eprintln!("{}", line.red());
                 eprintln!(" ");
             },
         }
@@ -17,11 +20,11 @@ fn parse_langs(content: Vec<String>) -> Vec<Language> {
     vec
 }
 
-/// Parse a language File line using Regex capturing groups, whitespace is not significant
-pub fn parse_line(line: &String) -> Result<Language, String> {
+/// Parse a language File line using Regex capturing groups, whitespace is not significant. A Unit Error is returned when the Regex did not match the given input line
+fn parse_line(line: &String) -> Result<Language, ()> {
     let r = Regex::new("^ *\"(.*)\" *, *\"(.*)?\" *, *\\[(.*)] *, *\\[(.*)] *, *\\[(.*)] *$").unwrap();
     let test_line = r#" "rs", "Rust", [ "//", "///"], ["/*"], ["*/"]"#;
-    let caps = r.captures(test_line).ok_or("Language Definition is malformed!".red().to_string())?;
+    let caps = r.captures(line).ok_or(())?;
     // these shouldn't be able to fail because all our match groups are mandatory
     // and the capturing itself should fail if they aren't provided by the user
     let extension = caps.get(1).unwrap().as_str();
@@ -29,11 +32,6 @@ pub fn parse_line(line: &String) -> Result<Language, String> {
     let inline = parse_array(caps.get(3).unwrap().as_str());
     let block_start = parse_array(caps.get(4).unwrap().as_str());
     let block_end = parse_array(caps.get(5).unwrap().as_str());
-    println!("{}", extension);
-    println!("{}", name);
-    println!("{:?}", inline);
-    println!("{:?}", block_start);
-    println!("{:?}", block_end);
     Ok(Language {
         name: name.to_string(),
         file_extension: extension.to_string(),
