@@ -1,17 +1,27 @@
 use std::path::PathBuf;
+use std::process::exit;
+use colored::Colorize;
 
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
 use structopt::StructOpt;
 
-use crate::{Cli, get_config_location, AppState};
+use crate::{AppState, Cli};
+use crate::grafzahl::config::{get_config_path_base, get_path_errors};
 
 pub fn init_ignore_list() -> Gitignore {
-    //TODO should take path from some where else
-    //TODO should be checked if path is overridden with env
-    let path_buff = PathBuf::from(format!("{}/ignore_list.gitignore", get_config_location()));
+    let path = get_config_path_base().join("ignore_list.gitignore");
+    let errors = get_path_errors(&path);
+    if errors.is_some() {
+        eprintln!("{}", "ERROR: ignore file couldn't be found!".red());
+        eprintln!("{}", errors.unwrap());
+        eprintln!("{}", path.display());
+        eprintln!(" ");
+        exit(2);
+    }
+
     let args = Cli::from_args();
     let mut builder = GitignoreBuilder::new(&args.directory);
-    builder.add(path_buff);
+    builder.add(path);
     let gitignore = builder.build().unwrap();
     gitignore
 }
