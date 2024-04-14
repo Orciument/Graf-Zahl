@@ -1,10 +1,9 @@
 use std::fmt::{Display, Formatter};
-use std::fs::File;
-use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use std::str::FromStr;
 use colored::Colorize;
 use crate::{AppState, get_config_location};
+use crate::grafzahl::io_reader::{read_file};
+use crate::grafzahl::language::lang_parser::parse_langs;
 
 #[derive(Debug, Clone)]
 pub struct Language {
@@ -21,74 +20,14 @@ impl Display for Language {
     }
 }
 
-pub struct LanguageParsingError;
-
-impl FromStr for Language {
-    type Err = LanguageParsingError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s = s.trim().to_string();
-        let name = get_next_value(&mut s).ok_or(LanguageParsingError)?;
-        let ext = get_next_value(&mut s).ok_or(LanguageParsingError)?;
-        s.retain(|x| !(x == '[' || x == ']'));
-        let mut vec: Vec<String> = vec![];
-        while !s.is_empty() {
-            vec.push(get_next_value(&mut s).ok_or(LanguageParsingError)?);
-        }
-
-        Ok(Language {
-            name,
-            file_extension: ext,
-            inline_symbols: vec,
-            block_start_symbols: vec![],
-            block_end_symbols: vec![],
-        })
-    }
-}
-
-fn get_next_value(s: &mut String) -> Option<String> {
-    //Clean start "
-    if s.chars().next()? == ' ' {
-        s.remove(0);
-    }
-    if s.chars().next()? == '"' {
-        s.remove(0);
-    }
-
-    //End of Value
-    let offset = &s.find('\"')?;
-    //Delete value from the OG String and collect the removed string as the value
-    let value = s.drain(..offset).collect::<String>();
-    s.remove(0); //Clean end "
-    Some(value)
-}
-
-pub fn import_languages() -> Vec<Language> {
+pub fn import_languages() -> Result<Vec<Language>, String> {
     let path: PathBuf = PathBuf::from(&format!("{}/languages.txt", get_config_location()));
-    let file = match File::open(&path) {
-        Ok(x) => x,
-        Err(e) => panic!("Could not find Language File! Might be missing privileges, or the Path to the File may be incorrect: {e}"),
-    };
-
-    let mut languages = vec![];
-    let lines = BufReader::new(file).lines();
-    for l_opt in lines {
-        let l = match l_opt {
-            Ok(x) => x,
-            Err(_) => continue,
-        };
-        let lang = match Language::from_str(&l) {
-            Ok(x) => x,
-            Err(_) => {
-                eprintln!("{}", "Error parsing line:".red().underline());
-                eprintln!("{}", l.red());
-                eprintln!(" ");
-                continue;
-            }
-        };
-        languages.push(lang);
+    let exists = path.try_exists().or(Err("ERROR: Could not access Language Config File. Path malformed or missing read permissions!".bright_red().to_string()))?;
+    if !exists {
+        return Err("ERROR: Specified Config File location does not exist!".red().to_string());
     }
-    languages
+    let lines = read_file(&path).or_else(|e| Err(e.to_string()))?;
+    return Ok(parse_langs(lines));
 }
 
 pub(crate) fn get_lang<'a>(extension: &str, state: &'a AppState) -> Result<&'a Language, String> {
