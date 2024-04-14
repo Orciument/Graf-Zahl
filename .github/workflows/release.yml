@@ -27,7 +27,7 @@ jobs:
             OS: windows-latest
     runs-on: ${{ matrix.OS }}
     env:
-      NAME: Graf-Zahl
+      NAME: graf_zahl
       TARGET: ${{ matrix.TARGET }}
       OS: ${{ matrix.OS }}
     steps:
