@@ -40,8 +40,8 @@ pub(crate) fn generic_count<CountMode: Countable>(state: &AppState, cli: &Cli, u
 fn print_node(node: TreeNode, indent_size: usize, debug: bool, hide_errors: bool) {
     if node.errored && hide_errors { return; }
     if node.ignored && !debug { return; }
-    let indent = "  ".repeat(indent_size);
-    println!("{indent}|- {}", node.string);
+    let indent = "│  ".repeat(indent_size);
+    println!("{indent}├ {}", node.string);
     for member in node.members {
         print_node(member, indent_size + 1, debug, hide_errors);
     }
