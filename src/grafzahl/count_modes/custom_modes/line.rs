@@ -4,7 +4,7 @@ use crate::grafzahl::count_modes::countable::Countable;
 pub(crate) type LineCount = u32;
 
 impl Countable for LineCount {
-    fn count(content: Vec<String>, _: &str, _: &AppState) -> Result<Self, String> {
+    fn count(content: Vec<String>, _: &str, _: &mut AppState) -> Result<Self, String> {
         return Ok(content.len() as LineCount);
     }
 

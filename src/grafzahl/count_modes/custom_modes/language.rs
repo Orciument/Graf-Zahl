@@ -41,7 +41,7 @@ impl Display for LanguageCount {
 }
 
 impl Countable for LanguageCount {
-    fn count(content: Vec<String>, extension: &str, state: &AppState) -> Result<Self, String> {
+    fn count(content: Vec<String>, extension: &str, state: &mut AppState) -> Result<Self, String> {
         let lang = get_lang(extension, state)?;
 
         let mut map: HashMap<String, u32> = HashMap::new();

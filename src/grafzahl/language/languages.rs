@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use std::process::exit;
@@ -43,8 +44,17 @@ pub fn import_languages() -> Vec<Language> {
     return parse_langs(lines);
 }
 
-pub(crate) fn get_lang<'a>(extension: &str, state: &'a AppState) -> Result<&'a Language, String> {
-    state.languages.iter()
-        .find(|x| x.file_extension == extension)
-        .ok_or(format!("LanguageNotFound: .{}", extension))
+pub(crate) fn get_lang<'a>(extension: &str, state: &'a mut AppState) -> Result<&'a Language, String> {
+    let o = state.languages.iter().find(|x| x.file_extension == extension);
+    if o.is_none() {
+        state.missing_lang.insert(extension.to_string());
+    }
+    o.ok_or(format!("LanguageNotFound: .{}", extension))
+}
+
+pub(crate) fn print_missing(missing: HashSet<String>) {
+    eprintln!("{}", "Language definition missing for the extensions: ".bright_yellow());
+    for s in missing {
+        eprintln!(".{}", s);
+    }
 }

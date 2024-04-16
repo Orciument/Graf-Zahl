@@ -12,7 +12,7 @@ use crate::grafzahl::count_modes::custom_modes::word::WordCount;
 use crate::grafzahl::count_modes::description_printer::print_description;
 use crate::grafzahl::generic_counter::generic_count;
 
-pub fn execute_count_mode(unsafe_path: &PathBuf, state: &AppState, cli: Cli) {
+pub fn execute_count_mode(unsafe_path: &PathBuf, state: &mut AppState, cli: Cli) {
     match cli.mode {
         Line => generic_count::<LineCount>(state, &cli, unsafe_path, true, true),
         Word => generic_count::<WordCount>(state, &cli, unsafe_path, true, true),

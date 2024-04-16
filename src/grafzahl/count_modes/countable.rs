@@ -4,7 +4,7 @@ use std::ops::Add;
 use crate::AppState;
 
 pub(crate) trait Countable: Add + Sum + Display + Default + Clone {
-    fn count(content: Vec<String>, extension: &str, state: &AppState) -> Result<Self, String>;
+    fn count(content: Vec<String>, extension: &str, state: &mut AppState) -> Result<Self, String>;
 
     fn display_summary(self, project_name: String);
 

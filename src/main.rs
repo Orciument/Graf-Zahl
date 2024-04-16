@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use grafzahl::config;
 
 use crate::grafzahl::ignore_checker::{init_empty_list, init_ignore_list};
-use crate::grafzahl::language::languages::{import_languages, Language};
+use crate::grafzahl::language::languages::{import_languages, Language, print_missing};
 use crate::grafzahl::count_modes::count_mode::{CountMode, execute_count_mode, explain_count_mode};
 
 mod grafzahl;
@@ -127,8 +127,12 @@ fn main() -> CliResult {
         missing_lang: HashSet::new(),
     };
 
+    let hide_errors= cli.hide_errors;
     execute_count_mode(&safe_path, &mut state, cli);
-    //TODO Display missing Langs
-    //TODO Add command line option to hide missing Langs
+
+    if !hide_errors {
+        println!();
+        print_missing(state.missing_lang);
+    }
     Ok(())
 }
