@@ -15,7 +15,7 @@ pub(crate) struct LineTypeCount {
 }
 
 impl Countable for LineTypeCount {
-    fn count(content: Vec<String>, extension: &str, state: &AppState) -> Result<Self, String> {
+    fn count(content: Vec<String>, extension: &str, state: &mut AppState) -> Result<Self, String> {
         let lang = get_lang(extension, state)?;
 
         let mut line_data: LineTypeCount = Default::default();

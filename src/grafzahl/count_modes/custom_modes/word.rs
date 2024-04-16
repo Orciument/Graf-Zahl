@@ -28,7 +28,7 @@ impl Display for WordCount {
 }
 
 impl Countable for WordCount {
-    fn count(content: Vec<String>, _: &str, _: &AppState) -> Result<Self, String> {
+    fn count(content: Vec<String>, _: &str, _: &mut AppState) -> Result<Self, String> {
         let mut count: u32 = 0;
         for line in content {
             count += line.trim().split_whitespace().count() as u32;

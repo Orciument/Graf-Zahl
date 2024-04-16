@@ -13,7 +13,7 @@ pub(crate) struct TreeNode {
     pub(crate) errored: bool,
 }
 
-pub(crate) fn generic_count<CountMode: Countable>(state: &AppState, cli: &Cli, unsafe_path: &PathBuf, default_summary: bool, default_per_file: bool) {
+pub(crate) fn generic_count<CountMode: Countable>(state: &mut AppState, cli: &Cli, unsafe_path: &PathBuf, default_summary: bool, default_per_file: bool) {
     let path = &unsafe_path.canonicalize()
         .expect(&*format!("Absolut Path could not be found for Path: {}", unsafe_path.display()));
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
@@ -47,7 +47,7 @@ fn print_node(node: TreeNode, indent_size: usize, debug: bool, hide_errors: bool
     }
 }
 
-fn count_dir<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNode, CountMode) {
+fn count_dir<CountMode: Countable>(path: &PathBuf, state: &mut AppState) -> (TreeNode, CountMode) {
     assert!(path.is_absolute(), "Received Filepath is not absolut! {}", path.display());
     assert!(path.exists(), "No File/Folder exists at this Path: {}", path.display());
 
@@ -71,7 +71,7 @@ fn count_dir<CountMode: Countable>(path: &PathBuf, state: &AppState) -> (TreeNod
     };
 }
 
-fn count_file<CountMode: Countable>(path: &PathBuf, name: &String, state: &AppState) -> (TreeNode, CountMode) {
+fn count_file<CountMode: Countable>(path: &PathBuf, name: &String, state: &mut AppState) -> (TreeNode, CountMode) {
     let ext = path.extension()
         .unwrap_or_else(|| OsStr::new(""))
         .to_str().expect("Can't convert Filename into UTF-8 String!");
@@ -102,7 +102,7 @@ fn count_file<CountMode: Countable>(path: &PathBuf, name: &String, state: &AppSt
     };
 }
 
-fn count_folder<CountMode: Countable>(path: &PathBuf, state: &AppState, name: &String) -> (TreeNode, CountMode) {
+fn count_folder<CountMode: Countable>(path: &PathBuf, state: &mut AppState, name: &String) -> (TreeNode, CountMode) {
     let members: Vec<(TreeNode, CountMode)> = match read_dir(path) {
         Ok(v) => v.iter().map(|p| count_dir(p, state)).collect(),
         Err(e) => {
